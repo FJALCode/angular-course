@@ -26,15 +26,15 @@
   
 
 
-### Componentes y directivas estructurales
+## Componentes y directivas estructurales
 Los `componentes` en angular son clases que poseen un decorador específico, por lo general una app de angular se basa en múltiples componentes, como pudiesen ser el menú de navegación, barra lateral, páginas y subpáginas, pie de páginas, etc.
 
-<img src="src/assets/componentes_angular.png" width="auto;"/>
+<img src="img/componentes_angular.png" width="auto;"/>
 
 Las `directivas estructurales` son instrucciones que le indicarán a la sección de HTML que hacer, por ejemplo `*ngIf`, `*ngFor`
-<img src="src/assets/directivas_estructurales.png" width="auto;"/>
+<img src="img/directivas_estructurales.png" width="auto;"/>
 
-### Combados básicos
+## Combados básicos
 *   **`ng new app-name`:** Permite la creación de un nuevo proyecto de Angular bajo el nombre `app-name` y parámetros indicados
 *   **`ng serve`:** Permite instanciar el proyecto de angular en el puerto establecido por defecto levanta en el `4200`. 
     * Usamos la bandera **`-p`** para indicar el puerto donde deseamos que abra `ng serve -p 4201`.
@@ -43,7 +43,7 @@ Las `directivas estructurales` son instrucciones que le indicarán a la sección
     * Usamos la bandera **`-is`**`(--inline-style)` para generar componentes sin el archivo de estilos.
     * Usamos la bandera **`-s --spec = false`** para generar componentes sin el archivo `.spec`.
 
-### Estructura de un proyecto de Angular
+## Estructura de un proyecto de Angular
 ```sh
 ├── e2e                    //Carpeta destinada a la realización de pruebas unitarias y de integración.
 ├── node_modules           //Carpeta destinada a los módulos de node.
@@ -80,7 +80,7 @@ Las `directivas estructurales` son instrucciones que le indicarán a la sección
 └── README.md              //Información general del proyecto
 ```
 
-### Component: Estructura, exportación e importación
+## Component: Estructura, exportación e importación
 * **`Component.css`**: Archivo de estilos del componente app.
 * **`Component.html`**: Archivo html del componente app.
 * **`Component.spec.ts`**: Archivo de pruebas automáticas del componente app
@@ -126,7 +126,7 @@ export class AppModule { }
 
 ```
 
-### Directivas *ngFor y *ngIf
+## Directivas *ngFor y *ngIf
 * **`*ngIf`**: Condicional propio de angular que permitirá mostrar/eliminar una sección de código html. `True` mostrará mientras `false` eliminará.
   ```html
   <div *ngIf="false" class="card text-white bg-dark mb-3" style="width: 100%;">
@@ -137,7 +137,7 @@ export class AppModule { }
   </div>
   ```
   Este tipo de directivamente se suelen condicionar usar con eventos a fin de mostrar y/o eliminar código.
-  <img src="src/assets/ngIf-bandera.png" width="auto;"/>
+  <img src="img/ngIf-bandera.png" width="auto;"/>
   ```html
   <div *ngIf="mostrar" class="card text-white bg-dark mb-3" style="width: 100%;">
     <div class="card-body">
@@ -175,7 +175,7 @@ export class AppModule { }
   }
   ```
   Dentro de la directiva `ngFor` podemos agregar código adicional separandolos con un `;` como sería el `index`
-  <img src="src/assets/ngfor-array.png" width="auto;"/>
+  <img src="img/ngfor-array.png" width="auto;"/>
   ```html
   <ul class="list-group">
       <li *ngFor="let nombrePersonajes of personajes; let i = index" class="list-group-item">
@@ -183,7 +183,7 @@ export class AppModule { }
       </li>
   </ul>
   ```  
-### Bootstrap
+## Bootstrap
 Existen varias manera de instalar bootstrap en nuestro proyecto, si nuestro proyecto usa internet se recomienda el uso del CDN de bootstrap, a nivel local existen otras maneras como el uso de paquetes de node. Para ello basta con instalar el bootstrap, jquery y popper
 ```sh
 npm install bootstrap --save
@@ -205,7 +205,7 @@ Luego nos dirigimos al archivo `angular.json` en la sección de build/styles y b
 ```
 > La desventaja de tenerlo de forma local es que estas librerías pasan a ser parte del `bundle` provocando que el programa final pese un poco más.
 
-### Routes
+## Routes
 Para el manejo de la navegación de las rutas creamos un archivo de nombre `app.routes.ts` dentro de la carpeta `app`, dicho archivo estará compuesto por una constante de tipo `Routes` que poseerá todos las rutas a navegar
 ```ts
 import { Routes, RouterModule } from '@angular/router';
@@ -251,7 +251,7 @@ Para poder renderizar la web indicada por la ruta debemos agregar la etiqueta `r
 <router-outlet></router-outlet>
 ```
 
-### RouterLink y RouterLinkActive
+## RouterLink y RouterLinkActive
 El `RouterLink` es una directiva que permite la navegación entre las distintas rutas de nuestra app, la misma se colocará en nuestro archivo HTML de la siguiente manera
 ```html
 <ul class="navbar-nav mr-auto">
@@ -306,7 +306,7 @@ El `RouterLinkActive` es una propiedad que va a permitir colocar la(s) clase(s) 
 ```
 En este caso al dar click a `home` el `routerLinkActive` agregará la clase `active` a la etiqueta `<li>` donde se encuentra.
 
-### Navegación entre rutas
+## Navegación entre rutas
 Las navegación entre las rutas pueden venir dadas a través del html con el `RouterLink` anteriormente mencionado o desde el TS importando la librería `Router` de angular
 
 ```ts
@@ -382,7 +382,7 @@ Para toda navegación es importante colocar el `/` en la ruta a fin de movernos 
 La ruta final que se obtendra sera del tipo `http://miruta/heroes/heroe/1` ya que no nos redirgimos a la ráiz, por ello el la ruta correcta a enviar sería `[routerLink]="['/heroe',i]"`
 
 
-### Servicios en Angular
+## Servicios en Angular
 Los servicios en angular son proveedores de datos que permitirán realizar peticiones CRUD (Create, Read, Update, Delete) de manera que sea un recurso re-utilizable para nuestra app. Para la creación de servicios podemos usar el angular CLI o hacerlo manualmente creando una carpeta `service` dentro de app y creando nuestro archivo bajo la nomenclatura `name.service.ts`
 
 ```ts
@@ -439,14 +439,14 @@ export class HeroesComponent implements OnInit {
 ```
 > Los servicios tendran variables de tipo privadas y el tipo será del mismo que la clase importada
 
-### Decoradores
+## Decoradores
 Un decorador es una clase especial de declaración que puede acoplarse a una clase, método, propiedad o parámetro y extiende una función agregandole información y funcionalidad. Los decoradores se reconocen ya que inician con un `@` y se expresan de la siguiente manera
 ```ts
 @decorador
 clase/método/propiedad/parámetro
 ```
 
-##### @Input
+#### @Input
 Los decoradores Input son una clase que permite pasar parametros desde el componente padre al hijo, para poderlo utilizar debemos importar en el componente hijo el decorador `Input` que se encuentra en `@angular/core` y colocar el decorar `@Input()` a la propiedad que se podra manipular desde el padre
 
 ```ts
@@ -475,7 +475,7 @@ Para poder hacer uso de las propiedades de los Input desde el componente padre d
 
 
 
-##### @Output
+#### @Output
 Los decoradores Output son una clase que permite pasar parametros desde el componente hijo al padre, para poderlo utilizar debemos importar en el componente hijo el decorador `Output` y el `EventEmitter` que se encuentra en `@angular/core` y colocar el decorar `@Output()` a la propiedad que se podra manipular desde el padre la cual sera del tipo `EventEmitter<Tipo>`
 
 ```ts
@@ -505,10 +505,10 @@ Para poder recibir los datos desde el componente padre debemos llamar la propied
     </app-heroe-tarjeta>
 ```
 
-### Pipes
+## Pipes
 Los pipes son herramientas de Angular que nos permitirán transformar visualmente la información (no cambián el valor de la misma), entre los pipes tenemos:
 
-##### Uppercase
+#### Uppercase
 Transforma todo el texto a mostrar a mayúscula
 ```ts
 value_expression = "Hola Mundo";
@@ -516,7 +516,7 @@ value_expression = "Hola Mundo";
 resultado = HOLA MUNDO ;
 ```
 
-##### Lowercase
+#### Lowercase
 Transforma todo el texto a mostrar a minúscula
 ```ts
 value_expression = "Hola Mundo";
@@ -524,7 +524,7 @@ value_expression = "Hola Mundo";
 resultado = hola mundo ;
 ```
 
-##### Slice
+#### Slice
 Permite cortar un texto/arreglo creando así un nuevo valor desde el punto cortado.
 ```ts
 value_expression = "Hola Mundo";
@@ -544,7 +544,7 @@ value_expression = [1,2,3,4,5,6,7,8,9];;
 resultado = 2,3,4,5 ;
 ```
 
-##### Decimal
+#### Decimal
 Permite formatear un valor tipo number con las reglas que se le estipulen. Siguen los siguientes parametros `{{ value_expression | number [ : digitsInfo [ : locale ] ] }}`
 Donde los parámetros de `digitsInfo` vendrá escrito bajo el siguiente formato:
 `{minIntegerDigits}.{minFractionDigits}-{maxFractionDigits}`
@@ -567,7 +567,7 @@ resultado = 3.14;
 ```
 > Si no colocamos un `minIntegerDigits` angular traerá todos los números enteros que halle.
 
-##### Percent
+#### Percent
 Permite formatear un valor a una cadena de porcentaje, según las reglas estipuladas. Siguen los siguientes parametros `{{ value_expression | percent [ : digitsInfo [ : locale ] ] }}`
 
 ```ts
@@ -581,7 +581,7 @@ resultado = 23.40%;
 ```
 Las reglas estipuladas siguen las mismas normas que las estipuladas en el pipe `Decimal`
 
-##### Currency
+#### Currency
 Permite formatear un valor a una cadena de moneda, según las reglas estipuladas. Siguen los siguientes parametros `{{ value_expression | currency [ : currencyCode [ : display [ : digitsInfo [ : locale ] ] ] ] }}`
 
 ```ts
@@ -604,19 +604,19 @@ resultado = LTM 1234.5;
 Las reglas estipuladas permiten personalizar la moneda a mostrar en caso de ser necesario como ocurre con la moneda inventada `LTM`
 
 
-##### Json
+#### Json
 Permite convertir un objeto en su representación tipo JSON para mostrar
 
 ```ts
-  value_expression = {nombre:'Logan', clave:'Wolverine', edad:500,
-    direccion:{calle:'Primera',casa:20}};
-  {{ value_expression }}
-  resultado = [object Object];
+value_expression = {nombre:'Logan', clave:'Wolverine', edad:500,
+  direccion:{calle:'Primera',casa:20}};
+{{ value_expression }}
+resultado = [object Object];
 
-  value_expression = {nombre:'Logan', clave:'Wolverine', edad:500,
-    direccion:{calle:'Primera',casa:20}};
-  {{ value_expression | json }}
-  resultado = { "nombre": "Logan", "clave": "Wolverine", "edad": 500, "direccion": { "calle": "Primera", "casa": 20 } };
+value_expression = {nombre:'Logan', clave:'Wolverine', edad:500,
+  direccion:{calle:'Primera',casa:20}};
+{{ value_expression | json }}
+resultado = { "nombre": "Logan", "clave": "Wolverine", "edad": 500, "direccion": { "calle": "Primera", "casa": 20 } };
 ```
 Si deseamos que el resultado se mire más ordenado podemos usar la etiqueta HTML `<pre></pre>`.
 ```html
@@ -637,4 +637,67 @@ El cual nos mostrará como resultado, es decir una información más ordenada y 
 } 
 ```
 
-##### Async
+#### Async
+
+Permite resolver situaciones de programación asíncrona desde el HTML
+
+```ts
+value_expression = new Promise<string>((resolve) => {
+                          resolve('llego la data');
+                      });
+{{ value_expression }}
+resultado = [object Promise];
+
+value_expression = new Promise<string>((resolve) => {
+                          resolve('llego la data'); 
+                      });
+{{ value_expression | async }}
+resultado = 'llego la data';
+```
+En caso de existir un error o entrar en el `reject` la data no se mostrará salvo que se haya trabajado previamente el `catch`
+
+#### Date
+
+Permite formatear un valor de fecha con las reglas configuradas
+`{{ value_expression | date [ : format [ : timezone [ : locale ] ] ] }}`
+
+```ts
+value_expression = new Date();
+{{ value_expression }}
+resultado = Thu Apr 29 2021 20:07:39 GMT-0400 (hora de Venezuela);
+
+value_expression = new Date();
+{{ value_expression | date }}
+resultado = Apr 29, 2021;
+
+value_expression = new Date();
+{{ value_expression | date:'medium' }}
+resultado = Apr 29, 2021, 8:10:04 PM;
+
+value_expression = new Date();
+{{ value_expression | date:'short' }}
+resultado =  4/29/21, 8:10 PM;
+```
+Angular trae por default varias opciones predefinidas para el formateo de fecha como sería en el caso de `medium`, `short`, etc. Si deseamos colocar un formato personalizado debemos colocarlo entre comillas simples después del `date` siguiendo las configuraciones encontradas en la documentación de angular
+
+```ts
+value_expression = new Date();
+{{ value_expression | date:'MMMM - dd' }}
+resultado = April - 29;
+```
+Por defecto el idioma en el cual se mostrarán las fechas sera el ingles, si deseamos cambiar o agregar otros idiomas debemos de agregar librerías de dichos idiomas ejecutando `ng add @angular/localize` e importando en el `app.module.ts`
+```ts
+import { LOCALE_ID } from '@angular/core';
+// la terminación es según el idioma en este caso es=español
+import '@angular/common/locales/global/es';
+
+providers: [
+    { provide: LOCALE_ID, useValue: 'es' }    //linea agregada
+  ],
+```
+Después de agregar dichas dependencias la app tomará como lenguaje principal el asignado en el `providers`, de forma adicional podemos importar más idiomas y usarlos en la opción local de nuestro pipe, por ejemplo si importamos el frances `import '@angular/common/locales/global/fr'` y agregamos como opción de date `fr` nos quedaría
+```ts
+value_expression = new Date();
+{{ value_expression | date:'MMMM - dd':'':'fr }}
+resultado = 	avril - 30;
+```
