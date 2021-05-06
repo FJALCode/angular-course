@@ -22,6 +22,10 @@
   * [Currency](#currency)
   * [Json](#json)
   * [Async](#async)
+  * [Date](#date)  
+  * [Personalizado](#personalizado)  
+  * [DomSeguro](#domseguro)  
+
 
   
 
@@ -39,9 +43,11 @@ Las `directivas estructurales` son instrucciones que le indicarán a la sección
 *   **`ng serve`:** Permite instanciar el proyecto de angular en el puerto establecido por defecto levanta en el `4200`. 
     * Usamos la bandera **`-p`** para indicar el puerto donde deseamos que abra `ng serve -p 4201`.
     * Usamos la bandera **`-o`** para indicar que una vez que cargue, abra el navegador por defecto `ng serve -o`.
-*   **`ng generate component ruta`:** Crea de un nuevo componente en nuestro proyecto de angular en la ruta indicada, por default lo cera en la carpeta `app`, podemos abreviar la petición `ng g c components/footer`, Este comando creará el componente en la ruta `src/app/components/footer/footer.component.ts`.
+*   **`ng generate component ruta`:** Crea un nuevo componente en nuestro proyecto de angular en la ruta indicada, por default lo cera en la carpeta `app`, podemos abreviar la petición `ng g c components/footer`, Este comando creará el componente en la ruta `src/app/components/footer/footer.component.ts`.
     * Usamos la bandera **`-is`**`(--inline-style)` para generar componentes sin el archivo de estilos.
     * Usamos la bandera **`-s --spec = false`** para generar componentes sin el archivo `.spec`.
+*   **`ng generate pipe ruta`:** Crea un pipe personalizado en la ruta indicada, por default lo cera en la carpeta `app`, podemos abreviar la petición `ng g p pipes/capitalizado`, Este comando creará el pipe en la ruta `src/app/pipes/capitalizado/capitalizado.pipe.ts`.
+
 
 ## Estructura de un proyecto de Angular
 ```sh
@@ -699,5 +705,57 @@ Después de agregar dichas dependencias la app tomará como lenguaje principal e
 ```ts
 value_expression = new Date();
 {{ value_expression | date:'MMMM - dd':'':'fr }}
-resultado = 	avril - 30;
+resultado = avril - 30;
+```
+
+#### Personalizado
+Los pipes personalizados pueden ser creado mediante Angular CLI con el comando `ng g p ruta` los cuales por buenas practicas se suelen crear en una carpeta de nombre **pipes**, si usamos el comando `ng g p pipes/capitalizado` nos creará en la ruta `src/app/pipes`
+* **capitalizado.pipe.spec.ts**: archivo de pruebas del pipe
+* **capitalizado.pipe.ts**: archivo de configuración del pipe
+
+De manera adicional nos actualizará las declaraciones con el nuevo elemento agregado en el `app.module.ts`, el pipe creado nos generará un archivo TS del tipo
+```ts
+import { Pipe, PipeTransform } from '@angular/core';
+@Pipe({
+  name: 'capitalizado'
+})
+export class CapitalizadoPipe implements PipeTransform {
+
+  transform(value: unknown, ...args: unknown[]):unknown {  
+    return null;
+  }
+}
+```
+Donde `value` representará el valor enviado desde el pipe en el html, mientras que `...args` recibirá la cantidad de argumentos que se deseen enviar
+```ts
+value_expression = 'fErNaNdO';
+{{ value_expression | capitalizado:1:true:'Hola'}}
+value = 'fErNaNdO'
+...args= [1,true,'Hola'];
+```
+De igual forma podemos atrapar los argumentos desde el pipe, por ejemplo si enviamos los mismos argumentos anteriores podemos indicarle lo que recibirá y el tipo
+```ts
+transform(
+  value: unknown, 
+  edad: number, 
+  activo:boolean, 
+  mensaje: string):unknown {  
+  return null;
+}
+```
+#### DomSeguro
+Existen enlaces, css, img, etc que nuestra app las detectará como inseguras prohibiendo abrirla, si nosotros estamos seguros de la procedencia de estos archivos podemos crear un pipe que nos permita pasar estos datos por algún sanitazer o función que nos permita limpiar/permitir el uso de dichos archivos, para ellos usaremos la clase de angular `DomSanitizer`.
+```ts
+import { Pipe, PipeTransform } from '@angular/core';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+@Pipe({
+  name: 'domseguro'
+})
+export class DomseguroPipe implements PipeTransform {
+  constructor(private domSanitizer:DomSanitizer) {}
+
+  transform(value: string): SafeResourceUrl {
+    return this.domSanitizer.bypassSecurityTrustResourceUrl(value);
+  }
+}
 ```
