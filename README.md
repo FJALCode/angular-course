@@ -1,15 +1,15 @@
 # Curso Base de Angular
 
-* [Componentes y directivas estructurales](#componentes-y-directivas-estructurales)
+* [Estructura de un proyecto en Angular](#estructura-de-un-proyecto-en-angular)
 * [Combados básicos](#combados-básicos)
 * [Estructura de un proyecto de Angular](#estructura-de-un-proyecto-de-angular)
-* [Componentes: Estructura, exportación e importación](#component-estructura-exportación-e-importación)
+* [Componentes](#componentes)
+* [Servicios](#servicios)
 * [Directivas *ngFor y *ngIf](#directivas-ngfor-y-ngif)
 * [Bootstrap](#bootstrap)
 * [Routes](#routes)
 * [RouterLink y RouterLinkActive](#routerlink-y-routerlinkactive)
 * [Navegación entre rutas](#navegación-entre-rutas)
-* [Servicios en Angular](#servicios-en-angular)
 * [Decoradores](#decoradores)
   * [@Input](#input)
   * [@Output](#output)
@@ -25,13 +25,13 @@
   * [Date](#date)  
   * [Personalizado](#personalizado)  
   * [DomSeguro](#domseguro)  
-
+* [Peticiones HTTP](#peticiones-http)
 
   
 
 
-## Componentes y directivas estructurales
-Los `componentes` en angular son clases que poseen un decorador específico, por lo general una app de angular se basa en múltiples componentes, como pudiesen ser el menú de navegación, barra lateral, páginas y subpáginas, pie de páginas, etc.
+## Estructura de un proyecto en Angular
+Angular es un lenguaje basado en `componentes`, por lo general una app de angular se basa en múltiples componentes, como pudiesen ser el menú de navegación, barra lateral, páginas y subpáginas, pie de páginas, etc.
 
 <img src="img/componentes_angular.png" width="auto;"/>
 
@@ -44,9 +44,11 @@ Las `directivas estructurales` son instrucciones que le indicarán a la sección
     * Usamos la bandera **`-p`** para indicar el puerto donde deseamos que abra `ng serve -p 4201`.
     * Usamos la bandera **`-o`** para indicar que una vez que cargue, abra el navegador por defecto `ng serve -o`.
 *   **`ng generate component ruta`:** Crea un nuevo componente en nuestro proyecto de angular en la ruta indicada, por default lo cera en la carpeta `app`, podemos abreviar la petición `ng g c components/footer`, Este comando creará el componente en la ruta `src/app/components/footer/footer.component.ts`.
-    * Usamos la bandera **`-is`**`(--inline-style)` para generar componentes sin el archivo de estilos.
-    * Usamos la bandera **`-s --spec = false`** para generar componentes sin el archivo `.spec`.
-*   **`ng generate pipe ruta`:** Crea un pipe personalizado en la ruta indicada, por default lo cera en la carpeta `app`, podemos abreviar la petición `ng g p pipes/capitalizado`, Este comando creará el pipe en la ruta `src/app/pipes/capitalizado/capitalizado.pipe.ts`.
+    * Usamos la bandera **`-s`**`(--inline-style)` para generar componentes sin el archivo de estilos.
+    * Usamos la bandera **`--skip-tests`** para generar componentes sin el archivo `.spec`.
+*   **`ng generate service ruta`:** Crea un servicio en la ruta indicada, por default lo crea en la carpeta `app`, podemos abreviar la petición `ng g s services/spotify`, Este comando creará el servicio en la ruta `src/app/services/spotify.service.ts`.
+    * Usamos la bandera **`--skip-tests`** para generar el servicio sin el archivo `.spec`.
+*   **`ng generate pipe ruta`:** Crea un pipe personalizado en la ruta indicada, por default lo crea en la carpeta `app`, podemos abreviar la petición `ng g p pipes/capitalizado`, Este comando creará el pipe en la ruta `src/app/pipes/capitalizado/capitalizado.pipe.ts`.
 
 
 ## Estructura de un proyecto de Angular
@@ -86,7 +88,8 @@ Las `directivas estructurales` son instrucciones que le indicarán a la sección
 └── README.md              //Información general del proyecto
 ```
 
-## Component: Estructura, exportación e importación
+## Componentes
+Los `componentes` son clases con bloques de código re-utilizable que poseen un decorador específico y ejecután una acción en particular, consta básicamente de:
 * **`Component.css`**: Archivo de estilos del componente app.
 * **`Component.html`**: Archivo html del componente app.
 * **`Component.spec.ts`**: Archivo de pruebas automáticas del componente app
@@ -129,8 +132,68 @@ import { HeaderComponent } from './components/header/header.component'
   bootstrap: [AppComponent]
 })
 export class AppModule { }
-
 ```
+
+## Servicios
+Los servicios  son clases que se encargan de acceder a los datos para entregarlos a los componentes, lo bueno de esto es que se puede reaprovechar servicios para distintos componentes. Para la creación de servicios podemos usar el angular CLI o hacerlo manualmente creando una carpeta `service` dentro de app y creando nuestro archivo bajo la nomenclatura `name.service.ts`
+
+```ts
+import { Injectable } from '@angular/core';
+
+@Injectable({providedIn: 'root'})
+export class HeroesService {
+    constructor() { }    
+}
+```
+> El decorador `providedIn: 'root'` es una manera automática de importar servicios sin agregar al `app.module.ts`
+
+Una vez creado el servicio debemos agregarlo en la sección providers del `app.module.ts`
+```ts
+import { BrowserModule } from '@angular/platform-browser';
+import { NgModule } from '@angular/core';
+
+import { HeroesService } from "./service/heroes.service";
+
+import { AppComponent } from './app.component';
+
+@NgModule({
+  declarations: [
+    AppComponent
+  ],
+  imports: [
+    BrowserModule
+  ],
+  providers: [
+    HeroesService
+  ],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+```
+> **RECORDATORIO:** Si tenemos el decordar `providedIn: 'root'` en nuestro servicios, este paso de importarlo en el `app.module.ts` pasa a ser opcional.
+
+Para hacer uso del servicio basta con importarlo e inyectarlo en el constructor de nuestro componente, como buena practica el nombre de la variable sera el mismo nombre de la clase pero antecediendole un `_`
+```ts
+import { Component, OnInit } from '@angular/core';
+import { HeroesService, Heroe } from "../../service/heroes.service";
+
+@Component({
+  selector: 'app-heroes',
+  templateUrl: './heroes.component.html',
+  styles: [
+  ]
+})
+export class HeroesComponent implements OnInit {
+  public heroes: Heroe[] = [];
+  constructor(private _heroesService: HeroesService) {}
+
+  ngOnInit(): void {
+    this.heroes = this._heroesService.getHeroes();
+    console.log(this.heroes);
+  }
+}
+```
+> Los servicios tendran variables de tipo privadas y el tipo será del mismo que la clase importada
 
 ## Directivas *ngFor y *ngIf
 * **`*ngIf`**: Condicional propio de angular que permitirá mostrar/eliminar una sección de código html. `True` mostrará mientras `false` eliminará.
@@ -229,7 +292,7 @@ const ROUTES: Routes = [
 })
 export class AppRoutesModule {}
 ```
->    Utilizaremos el path `{ path: '**', pathMatch:'full', redirectTo: 'home'}`, para generar una ruta por defecto en caso que la ruta colocada no exista
+>    Utilizaremos el path `{ path: '**', pathMatch:'full', redirectTo: 'home'}`, para generar una ruta por defecto en caso que la ruta colocada no exista, el mismo siempre se debe colocar al final de todas las rutas.
 
 Utilizaremos el método `forRoot()` porque configura el enrutador en el nivel raíz de la aplicación, este método proporciona los proveedores de servicios y las directivas necesarias para el enrutamiento y realiza la navegación inicial en función de la URL del navegador actual.
 
@@ -256,6 +319,41 @@ Para poder renderizar la web indicada por la ruta debemos agregar la etiqueta `r
 <app-navbar></app-navbar>
 <router-outlet></router-outlet>
 ```
+Otro método para generar las rutas es generar el código directamente desde desde el archivo `app.module.ts`, es decir en nuestro archivo de rutas tendríamos algo como
+```ts
+import { Routes } from '@angular/router';
+import { HomeComponent } from './components/home/home.component';
+export const ROUTES: Routes = [
+    { path: 'home', component: ArtistaComponent },
+    { path: '', component: HomeComponent },
+    { path: '**', component: HomeComponent }
+];
+```
+Mientras que en nuestro `app.module.ts` importariamos la librería `RouterModule` de angular y el archivo `app.route.ts` que creamos.
+```ts
+import { BrowserModule } from '@angular/platform-browser';
+import { NgModule } from '@angular/core';
+import { RouterModule } from "@angular/router";
+
+import { AppComponent } from './app.component';
+import { HomeComponent } from './components/home/home.
+import { ROUTES } from "./app.routes";
+
+@NgModule({
+  declarations: [
+    AppComponent,
+    HomeComponent
+  ],
+  imports: [
+    BrowserModule,
+    RouterModule.forRoot(ROUTES, {useHash:true})
+  ],
+  providers: [],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+```
+> El `{ useHash: true }`, permitirá que la ruta del proyecto a mostrar incluya un `#` dando como resultado `http://localhost:4200/#/home`
 
 ## RouterLink y RouterLinkActive
 El `RouterLink` es una directiva que permite la navegación entre las distintas rutas de nuestra app, la misma se colocará en nuestro archivo HTML de la siguiente manera
@@ -387,63 +485,6 @@ Para toda navegación es importante colocar el `/` en la ruta a fin de movernos 
 ```
 La ruta final que se obtendra sera del tipo `http://miruta/heroes/heroe/1` ya que no nos redirgimos a la ráiz, por ello el la ruta correcta a enviar sería `[routerLink]="['/heroe',i]"`
 
-
-## Servicios en Angular
-Los servicios en angular son proveedores de datos que permitirán realizar peticiones CRUD (Create, Read, Update, Delete) de manera que sea un recurso re-utilizable para nuestra app. Para la creación de servicios podemos usar el angular CLI o hacerlo manualmente creando una carpeta `service` dentro de app y creando nuestro archivo bajo la nomenclatura `name.service.ts`
-
-```ts
-import { Injectable } from '@angular/core';
-
-@Injectable({providedIn: 'root'})
-export class HeroesService {
-    constructor() { }    
-}
-```
-Una vez creado el servicio debemos agregarlo en la sección providers del `app.module.ts`
-```ts
-import { BrowserModule } from '@angular/platform-browser';
-import { NgModule } from '@angular/core';
-
-import { HeroesService } from "./service/heroes.service";
-
-import { AppComponent } from './app.component';
-
-@NgModule({
-  declarations: [
-    AppComponent
-  ],
-  imports: [
-    BrowserModule
-  ],
-  providers: [
-    HeroesService
-  ],
-  bootstrap: [AppComponent]
-})
-export class AppModule { }
-```
-Para hacer uso del servicio basta con importarlo e inyectarlo en el constructor de nuestro componente, como buena practica el nombre de la variable sera el mismo nombre de la clase pero antecediendole un `_`
-```ts
-import { Component, OnInit } from '@angular/core';
-import { HeroesService, Heroe } from "../../service/heroes.service";
-
-@Component({
-  selector: 'app-heroes',
-  templateUrl: './heroes.component.html',
-  styles: [
-  ]
-})
-export class HeroesComponent implements OnInit {
-  public heroes: Heroe[] = [];
-  constructor(private _heroesService: HeroesService) {}
-
-  ngOnInit(): void {
-    this.heroes = this._heroesService.getHeroes();
-    console.log(this.heroes);
-  }
-}
-```
-> Los servicios tendran variables de tipo privadas y el tipo será del mismo que la clase importada
 
 ## Decoradores
 Un decorador es una clase especial de declaración que puede acoplarse a una clase, método, propiedad o parámetro y extiende una función agregandole información y funcionalidad. Los decoradores se reconocen ya que inician con un `@` y se expresan de la siguiente manera
@@ -758,4 +799,41 @@ export class DomseguroPipe implements PipeTransform {
     return this.domSanitizer.bypassSecurityTrustResourceUrl(value);
   }
 }
+```
+## Peticiones HTTP
+Para usar el cliente HTTP de angular para hacer peticiones y consumir API REST usando los distintos métodos (GET, POST, PUT, DELETE, etc), es necesario importar el módulo propio de angular `HttpClientModule` en el `app.module.ts`
+```ts
+import { HttpClientModule } from "@angular/common/http";
+
+@NgModule({
+  declarations: [AppComponent],
+  imports: [
+    BrowserModule,
+    HttpClientModule,
+    RouterModule.forRoot(ROUTES, {useHash:true})
+  ],
+  providers: [],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+```
+Seguido de esto importamos la clase `HttpClient` de `@angular/common/http` en el componente/servicio donde lo vallamos a utilizar y lo inyectamos a su constructor 
+```ts
+import { HttpClient } from '@angular/common/http';
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-home',
+  templateUrl: './home.component.html',
+  styles: []
+})
+export class HomeComponent {
+  constructor( private http:HttpClient ) { }
+}
+```
+La clase `HttpCliente` nos traerá los distintos métodos (GET, POST, PUT, DELETE, etc) los cuales usaremos para relizar las peticiones seguidos del método `suscribe` el cual nos permitirá escuchar/recibir la data
+```ts
+this.http.get('https://restcountries.eu/rest/v2/lang/es').subscribe(data =>{
+  console.log(data);      
+});
 ```
