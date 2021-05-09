@@ -26,6 +26,12 @@
   * [Personalizado](#personalizado)  
   * [DomSeguro](#domseguro)  
 * [Peticiones HTTP](#peticiones-http)
+* [Operadores RxJS](#operadores-rxjs)
+  * [Map()](#map)
+  * [Pipe()](#método-pipe)  
+  * [Operadores RxJs vs Función de Orden Superior](#operadores-rxjs-vs-función-de-orden-superior)
+
+
 
   
 
@@ -837,3 +843,82 @@ this.http.get('https://restcountries.eu/rest/v2/lang/es').subscribe(data =>{
   console.log(data);      
 });
 ```
+
+## Operadores RxJS
+La RxJS *(Reactive Extensions)* es una librería muy útil de Javascript, que te ayuda a gestionar flujos de datos asíncronos *(Programación Reactiva)*. 
+Los operadores de RxJs son funciones que pueden ser encadenadas en lo que llamamos la cadena o pipeline de operadores y que se sitúan entre medias del Observable y el Observer con el objetivo de filtrar, transformar o combinar los valores del Observable/Observables. 
+Se compone basicamente de los siguientes elementos:
+*   **`Observable`:** El flujo de datos, una colección de eventos que se pueden emitir en algún momento.
+*   **`Observer`:** Un objeto que escucha el flujo de datos y puede actuar sobre los valores que éste emite.
+*   **`Subscription`:** Representa la ejecución de un observable y permite cancelarla.
+*   **`Operador`:** Función para manipular los eventos siguiendo los principios de la programación funcional.
+> Fuente de la información [acá](http://blog.enriqueoriol.com/2019/04/aprende-rxjs-3.html) y [acá](https://pablomagaz.com/blog/como-funcionan-operadores-rxjs)
+
+
+#### Map()
+El operador `Map` es llamado operador de transformación ya que nos permitirá manipular los datos recibidos y retornar un nuevo tipo de información más pulidad y precisa para la funcionalidad que estemos desarrollando sin tener que trabajar con el objeto entero.
+```ts
+import { of } from 'rxjs';
+import { map } from 'rxjs/operators';
+
+const obs = of({name: 'John Wayne', age: 72})
+const mapped = obs.pipe(
+                  map(v => v.name));
+
+mapped.subscribe(name => console.log (name));
+```
+En este ejemplo el flujo de evento de la constante `obs` incluye un objeto con nombre y edad, como queremos obtener solo el nombre usamos el operador `map()`para retornar el dato a usar.
+
+
+#### Pipe()
+El método `pipe()` permitirá ejecutar uno o varios operadores simultaneamente según tengamos la necesidad combinandolos y arrojando 1 solo resultado.
+```ts
+import { of } from 'rxjs';
+import { filter, map } from 'rxjs/operators';
+
+const obs = of({name: 'John Wayne', age: 72})
+const mapped = obs.pipe(
+                  filter(n => n.name== 'John Wayne'),
+                  map(v => v.name));
+
+mapped.subscribe(name => console.log (name));
+```
+Como se aprecia el método `pipe()` recibe un array de operadores, de modo que cada operador va modificando el flujo de datos.
+
+
+#### Operadores RxJs vs Función de Orden Superior
+
+Las funciones que operan en otras funciones, ya sea tomándolas como argumentos o retornandolas, se denominan `funciones de orden superior`, un buen ejemplo sería crear una función que permita sumar 2 números y retorne el resultado.
+Si bien es buena idea ver los operadores de RxJs como algo parecido a las funciones de orden superior los operadores de RxJs trabajan de forma un poco diferente. La principal diferencia es que los Observables no generan estructuras de datos intermedias como si hacen las funciones de orden superior como `map` o `filter`
+```ts
+const data = [0,1,2,3];
+
+const result = data
+.filter(x => {
+  console.log(`filter: ${x}`);
+  return x % 2 === 0;
+})
+.map(x => {
+  console.log(`map: ${x}`);
+  return x * x;
+})  
+// OUTPUT >> filter: 0, filter: 1, filter: 2, filter: 3, map: 0, map: 2
+```
+Cada una de estas funciones siempre devuelve un nuevo Array, sin realizar mutaciones en el Array original y como vemos en la salida hasta que filter no devuelve un nuevo Array, éste, no pasa a la siguiente función que es map. En estructuras largas de datos, esto, tendrá un coste elevado por la duplicidad temporal de los datos. La misma operación en RxJs tiene un aspecto casi idéntico, pero funciona de forma diferente.
+```ts
+const data = [0,1,2,3];
+const source$ = Rx.Observable.from(data);
+
+source$
+.filter(x => {
+  console.log(`filter: ${x}`);
+  return x % 2 === 0;
+})
+.map(x => {
+  console.log(`map: ${x}`);
+  return x * x;
+})
+.subscribe(); 
+// OUTPUT >> filter: 0, map: 0, filter: 1, filter: 2, map: 2, filter: 3
+```
+Técnicamente, un operador, o al menos la gran mayoría de ellos, siempre devuelven un Observable, de tal forma que realmente cada operador actúa como subscriptor del Observable, usando para ello la API `next, complete y error` del Observer. En la salida podemos ver como cada uno de los valores emitidos va pasando por los distintos operadores sin formar estructuras de datos intermedias, lo que es mucho más rápido y eficiente.
