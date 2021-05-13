@@ -7,9 +7,11 @@
 * [Servicios](#servicios)
 * [Directivas *ngFor y *ngIf](#directivas-ngfor-y-ngif)
 * [Bootstrap](#bootstrap)
-* [Routes](#routes)
-* [RouterLink y RouterLinkActive](#routerlink-y-routerlinkactive)
-* [Navegación entre rutas](#navegación-entre-rutas)
+* [Navegación en Angular](#navegación-en-angular)
+  * [Routes File](#routes-file)
+  * [RouterLink y RouterLinkActive](#routerlink-y-routerlinkactive)
+  * [Router](#router)
+  * [ActivatedRoute](#activatedroute)  
 * [Decoradores](#decoradores)
   * [@Input](#input)
   * [@Output](#output)
@@ -26,10 +28,13 @@
   * [Personalizado](#personalizado)  
   * [DomSeguro](#domseguro)  
 * [Peticiones HTTP](#peticiones-http)
-* [Operadores RxJS](#operadores-rxjs)
+* [RxJS](#rxjs)
   * [Map()](#map)
-  * [Pipe()](#método-pipe)  
+  * [Pipe()](#pipe)
+  * [Suscribe()](#suscribe)   
   * [Operadores RxJs vs Función de Orden Superior](#operadores-rxjs-vs-función-de-orden-superior)
+* [Ionic](#ionic)
+
 
 
 
@@ -280,7 +285,10 @@ Luego nos dirigimos al archivo `angular.json` en la sección de build/styles y b
 ```
 > La desventaja de tenerlo de forma local es que estas librerías pasan a ser parte del `bundle` provocando que el programa final pese un poco más.
 
-## Routes
+## Navegación en Angular
+La navegación en angular se basa en disminuir en lo posible la cantidad de data a intercambiar entre el **browser** y el **servidor**, para ello que hace es cargar una sola página (generalmente **index.html**) y después, todas las otras páginas/componentes se refrescan usando **Javascript**; pero sólo **index.html** es una página completa, el resto de las páginas son sólo porciones de HTML que su código Javascript va cambiando **dinámicamente**.
+
+#### Routes File
 Para el manejo de la navegación de las rutas creamos un archivo de nombre `app.routes.ts` dentro de la carpeta `app`, dicho archivo estará compuesto por una constante de tipo `Routes` que poseerá todos las rutas a navegar
 ```ts
 import { Routes, RouterModule } from '@angular/router';
@@ -361,7 +369,7 @@ export class AppModule { }
 ```
 > El `{ useHash: true }`, permitirá que la ruta del proyecto a mostrar incluya un `#` dando como resultado `http://localhost:4200/#/home`
 
-## RouterLink y RouterLinkActive
+#### RouterLink y RouterLinkActive
 El `RouterLink` es una directiva que permite la navegación entre las distintas rutas de nuestra app, la misma se colocará en nuestro archivo HTML de la siguiente manera
 ```html
 <ul class="navbar-nav mr-auto">
@@ -416,7 +424,7 @@ El `RouterLinkActive` es una propiedad que va a permitir colocar la(s) clase(s) 
 ```
 En este caso al dar click a `home` el `routerLinkActive` agregará la clase `active` a la etiqueta `<li>` donde se encuentra.
 
-## Navegación entre rutas
+#### Router
 Las navegación entre las rutas pueden venir dadas a través del html con el `RouterLink` anteriormente mencionado o desde el TS importando la librería `Router` de angular
 
 ```ts
@@ -491,6 +499,27 @@ Para toda navegación es importante colocar el `/` en la ruta a fin de movernos 
 ```
 La ruta final que se obtendra sera del tipo `http://miruta/heroes/heroe/1` ya que no nos redirgimos a la ráiz, por ello el la ruta correcta a enviar sería `[routerLink]="['/heroe',i]"`
 
+#### ActivatedRoute
+En muchas ocasiones tendremos que utilizar/recuperar los parámetros enviados mediante el sistema de rutas, para recibir los valores de los parámetros en el componente al que nos dirige la ruta tenemos que usar un objeto del sistema de routing llamado `ActivatedRoute`. Este objeto nos ofrece diversos detalles sobre la ruta actual, entre ellos los parámetros que contiene. Para usarlo debemos importarlo de su librería `@angular/router` e inyectarlo en el constructor
+```ts
+import { Component } from '@angular/core';
+import { ActivatedRoute } from "@angular/router";
+
+@Component({
+  selector: 'app-artista',
+  templateUrl: './artista.component.html',
+  styles: []
+})
+export class ArtistaComponent {
+
+  constructor(private activateRouter:ActivatedRoute) { 
+    this.activateRouter.params.subscribe(newParams =>{
+      console.log(newParams['id']);      
+    })
+   }
+}
+```
+En este ejemplo al objeto de tipo `AtivatedRoute` usa una propiedad llamada `params` que es un observable el cuál a través del método `suscribe()` nos permitirá estar atento a los cambios en los parámetros enviados al componente. Podemos usar los [Operadores RxJS.](#operadores-rxjs)
 
 ## Decoradores
 Un decorador es una clase especial de declaración que puede acoplarse a una clase, método, propiedad o parámetro y extiende una función agregandole información y funcionalidad. Los decoradores se reconocen ya que inician con un `@` y se expresan de la siguiente manera
@@ -844,7 +873,7 @@ this.http.get('https://restcountries.eu/rest/v2/lang/es').subscribe(data =>{
 });
 ```
 
-## Operadores RxJS
+## RxJS
 La RxJS *(Reactive Extensions)* es una librería muy útil de Javascript, que te ayuda a gestionar flujos de datos asíncronos *(Programación Reactiva)*. 
 Los operadores de RxJs son funciones que pueden ser encadenadas en lo que llamamos la cadena o pipeline de operadores y que se sitúan entre medias del Observable y el Observer con el objetivo de filtrar, transformar o combinar los valores del Observable/Observables. 
 Se compone basicamente de los siguientes elementos:
@@ -885,6 +914,18 @@ mapped.subscribe(name => console.log (name));
 ```
 Como se aprecia el método `pipe()` recibe un array de operadores, de modo que cada operador va modificando el flujo de datos.
 
+#### Suscribe()
+El método `.suscribe()` es un método del tipo Observable. El tipo Observable es una utilidad que transmite datos de forma asíncrona o sincrónica a una variedad de componentes o servicios que se han suscrito al observable.  Su interfaz define 3 métodos (1 obligatorio y 2 opcionales):
+*   **`next`:** *(Required)*. Método callback que recibe y usa los datos
+*   **`error`:** *(Opcional)*. Método callback que escucha el flujo de datos y puede actuar sobre los valores que éste emite en caso de errores.
+*   **`complete`:** *(Opcional)*. Método callback para la notificación de la ejecución completa.
+```ts
+myObservable.subscribe(
+  x => console.log('Observer got a next value: ' + x),
+  err => console.error('Observer got an error: ' + err),
+  () => console.log('Observer got a complete notification')
+);
+```
 
 #### Operadores RxJs vs Función de Orden Superior
 
