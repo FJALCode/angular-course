@@ -33,7 +33,11 @@
   * [Pipe()](#pipe)
   * [Suscribe()](#suscribe)   
   * [Operadores RxJs vs Función de Orden Superior](#operadores-rxjs-vs-función-de-orden-superior)
-* [Ionic](#ionic)
+* [Storage](#storage)
+  * [Local Storage](#local-storage)
+  * [Session Storage](#session-storage)
+
+ 
 
 
 
@@ -963,3 +967,45 @@ source$
 // OUTPUT >> filter: 0, map: 0, filter: 1, filter: 2, map: 2, filter: 3
 ```
 Técnicamente, un operador, o al menos la gran mayoría de ellos, siempre devuelven un Observable, de tal forma que realmente cada operador actúa como subscriptor del Observable, usando para ello la API `next, complete y error` del Observer. En la salida podemos ver como cada uno de los valores emitidos va pasando por los distintos operadores sin formar estructuras de datos intermedias, lo que es mucho más rápido y eficiente.
+
+## Storage
+El objeto Storage (API de almacenamiento web) nos permite almacenar datos de manera local en el navegador y sin necesidad de realizar alguna conexión y/o consultas a una base de datos. 
+
+#### Local Storage
+Es una propiedades que accede al objeto Storage y tienen la función de almacenar datos de manera local, dicha información se almecena de forma indefinida o hasta que se decida limpiar los datos del navegador. Se almacenan de la manera llave-valor
+```ts
+// set a value
+localStorage.setItem('Nombre', 'Miguel Antonio')
+localStorage.Apellido = 'Márquez Montoya'
+
+// get a value
+localStorage.getItem('Nombre'),
+localStorage.Apellido
+
+// remove a single item
+localStorage.removeItem('Nombre');
+localStorage.removeItem(Apellido);
+
+// clear the whole localStorage
+localStorage.clear();
+```
+
+#### Session Storage
+Es una propiedades que accede al objeto Storage y tienen la función de almacenar datos de manera local, dicha propiedad almacena la información mientras la pestaña donde se esté utilizando siga abierta, una vez cerrada, la información se elimina. Se almacenan de la manera llave-valor
+
+```ts
+// set a value
+sessionStorage.setItem('Nombre', 'Miguel Antonio')
+sessionStorage.Apellido = 'Márquez Montoya'
+
+// get a value
+sessionStorage.getItem('Nombre'),
+sessionStorage.Apellido
+
+// remove a single item
+sessionStorage.removeItem('Nombre');
+sessionStorage.removeItem(Apellido);
+
+// clear the whole sessionStorage
+sessionStorage.clear();
+```
