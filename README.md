@@ -4,6 +4,7 @@
 * [Combados básicos](#combados-básicos)
 * [Estructura de un proyecto de Angular](#estructura-de-un-proyecto-de-angular)
 * [Componentes](#componentes)
+* [Módulo](#módulo)
 * [Servicios](#servicios)
 * [Directivas *ngFor y *ngIf](#directivas-ngfor-y-ngif)
 * [Bootstrap](#bootstrap)
@@ -38,13 +39,6 @@
   * [Session Storage](#session-storage)
 
  
-
-
-
-
-  
-
-
 ## Estructura de un proyecto en Angular
 Angular es un lenguaje basado en `componentes`, por lo general una app de angular se basa en múltiples componentes, como pudiesen ser el menú de navegación, barra lateral, páginas y subpáginas, pie de páginas, etc.
 
@@ -147,6 +141,51 @@ import { HeaderComponent } from './components/header/header.component'
   bootstrap: [AppComponent]
 })
 export class AppModule { }
+```
+
+## Módulo
+Los `módulos` son un mecanismos de agrupación lógica de símbolos (componentes, directivas, pipes y servicios) que permite a angular saber las importaciones / exportaciones necesarias para que cierto componente funcione. 
+```ts
+import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+
+@NgModule({
+  declarations: [],
+  imports: [CommonModule]
+})
+export class ComponentsModule { }
+```
+Los módulos por defecto incluiran el decorador `@NgModule` e importarán el módulo opcional `CommonModule`.
+> El `CommonModule` es un módulo básico de angular que incluira las directivas `NgIf, NgForOf, DecimalPipe, etc`
+
+
+
+Un módulo Angular normalmente está formado por una carpeta completa de componentes, servicios, etc, al igual que también tienen la particularidad de definir las dependencias con otros módulos, esto ultimo es especialmente util ya que cuando queremos deshacernos de una funcionalidad de nuestra aplicación podríamos simplemente eliminar el Módulo Angular correspondiente, con un impacto mínimo en el resto de áreas de la aplicación.
+
+```ts
+@NgModule({
+imports: [ BrowserModule, HttpModule, FormsModule ],
+declarations: [ PersonComponent, ContactComponent, ContactListComponent ],
+providers: [ PersonService, ContactService ],
+exports: [ ContactListComponent, ContactComponent ]
+})
+export class ContactModule {}
+```
+Para poder usar los componentes/servicios/pipes, etc, en otros módulos debemos exportarlos dentro de nuestro decorador `@NgModule` e importar el módulo en el lugar correspondiente
+
+```ts
+import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ContactModule } from '../contact.module';
+
+@NgModule({
+  declarations: [],
+  imports: [
+    CommonModule,
+    ContactModule
+    ]
+})
+export class ComponentsModule { }
 ```
 
 ## Servicios
@@ -823,6 +862,16 @@ transform(
   return null;
 }
 ```
+
+El decorador `@Pipe` recibe multiples propiedades entre ellas tenemos
+```ts
+@Pipe({
+  name: 'capitalizado',
+  pure: false
+})
+```
+>**name:** Nombre del pipe
+>**pure:** Por default no se coloca y viene seteada en `true`, pero al cambiarla a `false` detectará los cambios impuros dentro de un objeto compuesto, es decir con esto angular activará la detección de cambios a la propiedad marcada.
 #### DomSeguro
 Existen enlaces, css, img, etc que nuestra app las detectará como inseguras prohibiendo abrirla, si nosotros estamos seguros de la procedencia de estos archivos podemos crear un pipe que nos permita pasar estos datos por algún sanitazer o función que nos permita limpiar/permitir el uso de dichos archivos, para ellos usaremos la clase de angular `DomSanitizer`.
 ```ts
