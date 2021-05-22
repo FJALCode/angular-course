@@ -4,9 +4,12 @@
 * [Combados básicos](#combados-básicos)
 * [Estructura de un proyecto de Angular](#estructura-de-un-proyecto-de-angular)
 * [Componentes](#componentes)
-* [Módulo](#módulo)
 * [Servicios](#servicios)
-* [Directivas *ngFor y *ngIf](#directivas-ngfor-y-ngif)
+* [Módulo](#módulo)
+* [CommonModule](#commonmodule)
+  * [ngIf](#ngif)
+  * [ngFor](#ngfor)
+  * [ngStyle](#ngstyle)
 * [Bootstrap](#bootstrap)
 * [Navegación en Angular](#navegación-en-angular)
   * [Routes File](#routes-file)
@@ -38,6 +41,7 @@
   * [Local Storage](#local-storage)
   * [Session Storage](#session-storage)
 
+
  
 ## Estructura de un proyecto en Angular
 Angular es un lenguaje basado en `componentes`, por lo general una app de angular se basa en múltiples componentes, como pudiesen ser el menú de navegación, barra lateral, páginas y subpáginas, pie de páginas, etc.
@@ -54,6 +58,7 @@ Las `directivas estructurales` son instrucciones que le indicarán a la sección
     * Usamos la bandera **`-o`** para indicar que una vez que cargue, abra el navegador por defecto `ng serve -o`.
 *   **`ng generate component ruta`:** Crea un nuevo componente en nuestro proyecto de angular en la ruta indicada, por default lo cera en la carpeta `app`, podemos abreviar la petición `ng g c components/footer`, Este comando creará el componente en la ruta `src/app/components/footer/footer.component.ts`.
     * Usamos la bandera **`-s`**`(--inline-style)` para generar componentes sin el archivo de estilos.
+    * Usamos la bandera **`-t`**`(--inline-template)` Incluye la plantilla HTML en el component.ts.
     * Usamos la bandera **`--skip-tests`** para generar componentes sin el archivo `.spec`.
 *   **`ng generate service ruta`:** Crea un servicio en la ruta indicada, por default lo crea en la carpeta `app`, podemos abreviar la petición `ng g s services/spotify`, Este comando creará el servicio en la ruta `src/app/services/spotify.service.ts`.
     * Usamos la bandera **`--skip-tests`** para generar el servicio sin el archivo `.spec`.
@@ -143,50 +148,6 @@ import { HeaderComponent } from './components/header/header.component'
 export class AppModule { }
 ```
 
-## Módulo
-Los `módulos` son un mecanismos de agrupación lógica de símbolos (componentes, directivas, pipes y servicios) que permite a angular saber las importaciones / exportaciones necesarias para que cierto componente funcione. 
-```ts
-import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-
-@NgModule({
-  declarations: [],
-  imports: [CommonModule]
-})
-export class ComponentsModule { }
-```
-Los módulos por defecto incluiran el decorador `@NgModule` e importarán el módulo opcional `CommonModule`.
-> El `CommonModule` es un módulo básico de angular que incluira las directivas `NgIf, NgForOf, DecimalPipe, etc`
-
-
-
-Un módulo Angular normalmente está formado por una carpeta completa de componentes, servicios, etc, al igual que también tienen la particularidad de definir las dependencias con otros módulos, esto ultimo es especialmente util ya que cuando queremos deshacernos de una funcionalidad de nuestra aplicación podríamos simplemente eliminar el Módulo Angular correspondiente, con un impacto mínimo en el resto de áreas de la aplicación.
-
-```ts
-@NgModule({
-imports: [ BrowserModule, HttpModule, FormsModule ],
-declarations: [ PersonComponent, ContactComponent, ContactListComponent ],
-providers: [ PersonService, ContactService ],
-exports: [ ContactListComponent, ContactComponent ]
-})
-export class ContactModule {}
-```
-Para poder usar los componentes/servicios/pipes, etc, en otros módulos debemos exportarlos dentro de nuestro decorador `@NgModule` e importar el módulo en el lugar correspondiente
-
-```ts
-import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ContactModule } from '../contact.module';
-
-@NgModule({
-  declarations: [],
-  imports: [
-    CommonModule,
-    ContactModule
-    ]
-})
-export class ComponentsModule { }
-```
 
 ## Servicios
 Los servicios  son clases que se encargan de acceder a los datos para entregarlos a los componentes, lo bueno de esto es que se puede reaprovechar servicios para distintos componentes. Para la creación de servicios podemos usar el angular CLI o hacerlo manualmente creando una carpeta `service` dentro de app y creando nuestro archivo bajo la nomenclatura `name.service.ts`
@@ -249,63 +210,159 @@ export class HeroesComponent implements OnInit {
 ```
 > Los servicios tendran variables de tipo privadas y el tipo será del mismo que la clase importada
 
-## Directivas *ngFor y *ngIf
-* **`*ngIf`**: Condicional propio de angular que permitirá mostrar/eliminar una sección de código html. `True` mostrará mientras `false` eliminará.
-  ```html
-  <div *ngIf="false" class="card text-white bg-dark mb-3" style="width: 100%;">
-      <div class="card-body">
-          <h5 class="card-title">Fernando Antúnez</h5>
-          <p class="card-text">Estudiar hasta tarde da frutos</p>                
-      </div>
-  </div>
-  ```
-  Este tipo de directivamente se suelen condicionar usar con eventos a fin de mostrar y/o eliminar código.
-  <img src="img/ngIf-bandera.png" width="auto;"/>
-  ```html
-  <div *ngIf="mostrar" class="card text-white bg-dark mb-3" style="width: 100%;">
-    <div class="card-body">
-        <h5 class="card-title">{{ frase.autor }}</h5>
-        <p class="card-text">{{ frase.mensaje }}</p>
-    </div>
-  </div>
-  <div class="d-grid gap-2">
-      <button (click)="mostrar = !mostrar" class="bts btn-outline-dark btn-sm">
-        Mostrar/Ocultar
-      </button>
-  </div>
-  ```
-  ```ts
-  export class BodyComponent {
-  mostrar: boolean = true;
-  public frase : any = {
-    mensaje: 'Estudiar hasta tarde da frutos',
-    autor: 'Fernando Antúnez'
-    }
-  }
-  ```
 
-* **`*ngFor`**: Condicional propio de angular que permitirá recorrer un arreglo. Se coloca en la etiqueta a repetir con la caracteristicas `*ngFor="let nombrePersonajes of personajes"` donde inicializamos una variable de nombre `nombrePersonajes` la cual tomará los elementos propios del arreglo `personajes`
-  ```html
-  <ul class="list-group">
-      <li *ngFor="let nombrePersonajes of personajes" class="list-group-item">
-          {{ nombrePersonajes }}
-      </li>
-  </ul>
-  ```
-  ```ts
-  export class BodyComponent {
-    personajes : string[] = ['Spiderman', 'Venom', 'Dr. Octopus']
+## Módulo
+Los `módulos` son un mecanismos de agrupación lógica de símbolos (componentes, directivas, pipes y servicios) que permite a angular saber las importaciones / exportaciones necesarias para que cierto componente funcione. 
+```ts
+import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+
+@NgModule({
+  declarations: [],
+  imports: [CommonModule]
+})
+export class ComponentsModule { }
+```
+Los módulos por defecto incluiran el decorador `@NgModule` e importarán el módulo opcional `CommonModule`.
+> El `CommonModule` es un módulo básico de angular que incluira las directivas `NgIf, NgForOf, DecimalPipe, etc`
+
+
+
+Un módulo Angular normalmente está formado por una carpeta completa de componentes, servicios, etc, al igual que también tienen la particularidad de definir las dependencias con otros módulos, esto ultimo es especialmente util ya que cuando queremos deshacernos de una funcionalidad de nuestra aplicación podríamos simplemente eliminar el Módulo Angular correspondiente, con un impacto mínimo en el resto de áreas de la aplicación.
+
+```ts
+@NgModule({
+imports: [ BrowserModule, HttpModule, FormsModule ],
+declarations: [ PersonComponent, ContactComponent, ContactListComponent ],
+providers: [ PersonService, ContactService ],
+exports: [ ContactListComponent, ContactComponent ]
+})
+export class ContactModule {}
+```
+Para poder usar los componentes/servicios/pipes, etc, en otros módulos debemos exportarlos dentro de nuestro decorador `@NgModule` e importar el módulo en el lugar correspondiente
+
+```ts
+import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ContactModule } from '../contact.module';
+
+@NgModule({
+  declarations: [],
+  imports: [
+    CommonModule,
+    ContactModule
+    ]
+})
+export class ComponentsModule { }
+```
+
+## CommonModule
+Módulo base de Angular proveniente del package `@angular/common` que exporta todas las directivas y Pipes de angular básicos, tales como `NgIf, NgForOf, DecimalPipe, etc`. Este módulo es reexportado por `BrowserModule`, que se incluye automáticamente en la raíz `AppModule` cuando se crea una nueva aplicación con el comando `new` en el CLI.
+```ts
+import { BrowserModule } from '@angular/platform-browser';
+import { NgModule } from '@angular/core';
+
+@NgModule({
+  declarations: [],
+  imports: [BrowserModule],
+  providers: [],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+```
+
+#### ngIf
+Condicional del package `@angular/common` que permitira a través de su valor booleano ejecutar una sección del código HTML.
+
+```html
+<div *ngIf="false" class="card text-white bg-dark mb-3" style="width: 100%;">
+    <div class="card-body">
+        <h5 class="card-title">Fernando Antúnez</h5>
+        <p class="card-text">Estudiar hasta tarde da frutos</p>                
+    </div>
+</div>
+```
+
+Este tipo de directiva condicionan eventos a fin de mostrar y/o eliminar elementos HTML.
+
+<img src="img/ngIf-bandera.png" width="auto;"/>
+
+```html
+<div *ngIf="mostrar" class="card text-white bg-dark mb-3" style="width: 100%;">
+  <div class="card-body">
+      <h5 class="card-title">{{ frase.autor }}</h5>
+      <p class="card-text">{{ frase.mensaje }}</p>
+  </div>
+</div>
+<div class="d-grid gap-2">
+    <button (click)="mostrar = !mostrar" class="bts btn-outline-dark btn-sm">
+      Mostrar/Ocultar
+    </button>
+</div>
+```
+```ts
+export class BodyComponent {
+mostrar: boolean = true;
+public frase : any = {
+  mensaje: 'Estudiar hasta tarde da frutos',
+  autor: 'Fernando Antúnez'
   }
-  ```
-  Dentro de la directiva `ngFor` podemos agregar código adicional separandolos con un `;` como sería el `index`
-  <img src="img/ngfor-array.png" width="auto;"/>
-  ```html
-  <ul class="list-group">
-      <li *ngFor="let nombrePersonajes of personajes; let i = index" class="list-group-item">
-          {{ i + 1 }} - {{ nombrePersonajes }}
-      </li>
-  </ul>
-  ```  
+}
+```
+
+#### ngFor
+Condicional del package `@angular/common` que permitirá recorrer un arreglo. Se coloca en la etiqueta a repetir con la caracteristicas `*ngFor="let nombrePersonajes of personajes"` donde inicializamos una variable de nombre `nombrePersonajes` la cual tomará los elementos propios del arreglo `personajes`
+```html
+<ul class="list-group">
+    <li *ngFor="let nombrePersonajes of personajes" class="list-group-item">
+        {{ nombrePersonajes }}
+    </li>
+</ul>
+```
+```ts
+export class BodyComponent {
+  personajes : string[] = ['Spiderman', 'Venom', 'Dr. Octopus']
+}
+```
+Dentro de la directiva `ngFor` podemos agregar código adicional separandolos con un `;` como sería el `index`
+<img src="img/ngfor-array.png" width="auto;"/>
+```html
+<ul class="list-group">
+    <li *ngFor="let nombrePersonajes of personajes; let i = index" class="list-group-item">
+        {{ i + 1 }} - {{ nombrePersonajes }}
+    </li>
+</ul>
+```  
+
+#### ngStyle
+Una directiva de atributo que actualiza los estilos del elemento HTML que lo contiene desde el `component.ts`. Establece una o más propiedades de estilo, especificadas como pares clave-valor separados por dos puntos.
+
+```ts
+const styleExp: string = '40px'
+const widthExp: number = 40;
+const objExp: object = {
+  'font-size': '15px',
+  'color': 'red',
+  'background-color': 'blue'
+}
+
+//Establece la fuente del elemento contenedor en el resultado de
+//una expresión (styleExp).
+<some-element [ngStyle]="{'font-style': styleExp}">A
+</some-element>
+
+//Establece el ancho del elemento contenedor en un valor de píxel
+//devuelto por una expresión (widthExp).
+<some-element [ngStyle]="{'max-width.px': widthExp}">E
+</some-element>
+
+//Establece una colección de valores de estilo mediante una
+//expresión que devuelva pares clave-valor (objExp).
+<some-element [ngStyle]="objExp">I
+</some-element>
+```
+
+
 ## Bootstrap
 Existen varias manera de instalar bootstrap en nuestro proyecto, si nuestro proyecto usa internet se recomienda el uso del CDN de bootstrap, a nivel local existen otras maneras como el uso de paquetes de node. Para ello basta con instalar el bootstrap, jquery y popper
 ```sh
@@ -1058,3 +1115,6 @@ sessionStorage.removeItem(Apellido);
 // clear the whole sessionStorage
 sessionStorage.clear();
 ```
+
+
+
