@@ -5,11 +5,14 @@
 * [Estructura de un proyecto de Angular](#estructura-de-un-proyecto-de-angular)
 * [Componentes](#componentes)
 * [Servicios](#servicios)
+* [Directivas](#directivas)
 * [Módulo](#módulo)
 * [CommonModule](#commonmodule)
   * [ngIf](#ngif)
   * [ngFor](#ngfor)
   * [ngStyle](#ngstyle)
+  * [ngClass](#ngclass)
+  * [ngSwitch](#ngSwitch)
 * [Bootstrap](#bootstrap)
 * [Navegación en Angular](#navegación-en-angular)
   * [Routes File](#routes-file)
@@ -62,6 +65,8 @@ Las `directivas estructurales` son instrucciones que le indicarán a la sección
     * Usamos la bandera **`--skip-tests`** para generar componentes sin el archivo `.spec`.
 *   **`ng generate service ruta`:** Crea un servicio en la ruta indicada, por default lo crea en la carpeta `app`, podemos abreviar la petición `ng g s services/spotify`, Este comando creará el servicio en la ruta `src/app/services/spotify.service.ts`.
     * Usamos la bandera **`--skip-tests`** para generar el servicio sin el archivo `.spec`.
+*   **`ng generate directive ruta`:** Crea una directiva personalizada en la ruta indicada, por default lo crea en la carpeta `app`, podemos abreviar la petición `ng g d directives/resaltado`, Este comando creará la directiva en la ruta `src/app/directives/resaltado/resaltado.directive.ts`.
+    * Usamos la bandera **`--skip-tests`** para generar la directiva sin el archivo `.spec`.
 *   **`ng generate pipe ruta`:** Crea un pipe personalizado en la ruta indicada, por default lo crea en la carpeta `app`, podemos abreviar la petición `ng g p pipes/capitalizado`, Este comando creará el pipe en la ruta `src/app/pipes/capitalizado/capitalizado.pipe.ts`.
 
 
@@ -210,6 +215,80 @@ export class HeroesComponent implements OnInit {
 ```
 > Los servicios tendran variables de tipo privadas y el tipo será del mismo que la clase importada
 
+## Directivas
+Las directivas son instrucciones para crear, formatear e interaccionar con el DOM. De hecho, los componentes son un tipo de directiva, ya que cuando usamos el selector de un componente, le estamos pidiendo a Angular que muestre dicho componente (y su lógica de programación) en algún lugar determinado del DOM. 
+
+Al igual que existen directivas que son más habituales de usar creadas por el mismo angular como sería [ngIf](#ngif), [ngFor](#ngfor), [ngStyle](#ngstyle), [ngClass](#ngclass), etc... Existe la posibilidad de crear nuestras propias directivas con el comando `ng generate directive ruta`
+
+```ts
+import { Directive } from '@angular/core';
+
+@Directive({
+  selector: '[appResaltado]'
+})
+export class ResaltadoDirective {
+
+  constructor() { console.log('Directiva personalizada') }
+}
+```
+
+Podemos hacer uso de dicha directiva desde nuestro html llamandola en la etiqueta de nuestra preferencia
+```html
+<p appResaltado> Hola mundo</p>
+```
+
+Nuestra directiva podremos configurarla desde el archivo TS según la necesidad que tengamos importando las clases que requiramos a fin de modificar nuestro DOM.
+```ts
+import { Directive, ElementRef, HostListener } from '@angular/core';
+
+@Directive({
+  selector: '[appResaltado]'
+})
+export class ResaltadoDirective {
+
+  // Evento que escucha cuando el mouse pasa por la etiqueta
+  @HostListener('mouseenter') mouseEntro(){
+    this.elementRef.nativeElement.style.backgroundColor = 'yellow';
+  }
+
+  // Evento que escucha cuando el mouse sale de la etiqueta
+  @HostListener('mouseleave') mouseSalio(){
+    this.elementRef.nativeElement.style.backgroundColor = null;
+  }
+
+  constructor(private elementRef:ElementRef) {}
+}
+```
+De igual manera podremos mandar parametros a nuestra directiva personalizada desde nuestro HTML, para ello basta con poner entre llaves nuestra directiva e igualarla con el parametro a mandar, en nuestro archivo TS de nuestra directiva debemos usar el decorador [@Input](#input) a fin de recibir el parametro a usar
+```html
+<p [appResaltado] = "'orange'">Hola mundo</p>
+```
+```ts
+import { Directive, ElementRef, HostListener, Input,  } from '@angular/core';
+
+@Directive({
+  selector: '[appResaltado]'
+})
+export class ResaltadoDirective {
+
+  @Input("appResaltado") nuevoColor:string
+
+  @HostListener('mouseenter') mouseEntro(){
+    this.resaltar(this.nuevoColor || 'yellow');
+  }
+
+  @HostListener('mouseleave') mouseSalio(){
+    this.resaltar(null);
+  }
+
+  constructor(private elementRef:ElementRef) {}
+
+  private resaltar (color:string){
+    this.elementRef.nativeElement.style.backgroundColor = color;
+  }
+}
+```
+
 
 ## Módulo
 Los `módulos` son un mecanismos de agrupación lógica de símbolos (componentes, directivas, pipes y servicios) que permite a angular saber las importaciones / exportaciones necesarias para que cierto componente funcione. 
@@ -348,18 +427,66 @@ const objExp: object = {
 
 //Establece la fuente del elemento contenedor en el resultado de
 //una expresión (styleExp).
-<some-element [ngStyle]="{'font-style': styleExp}">A
-</some-element>
+<p [ngStyle]="{'font-size': styleExp}">A
+</p>
 
 //Establece el ancho del elemento contenedor en un valor de píxel
 //devuelto por una expresión (widthExp).
-<some-element [ngStyle]="{'max-width.px': widthExp}">E
-</some-element>
+<p [ngStyle]="{'max-width.px': widthExp}">E
+</p>
 
 //Establece una colección de valores de estilo mediante una
 //expresión que devuelva pares clave-valor (objExp).
-<some-element [ngStyle]="objExp">I
-</some-element>
+<p [ngStyle]="objExp">I
+</p>
+```
+
+#### ngClass
+Agrega y elimina clases CSS en un elemento HTML, su sintasis básica es escribir la propiedad `[ngClass]` seguida de la clase tipo string o variable que la acompañe. Las clases CSS se actualizan de la siguiente manera, según el tipo de evaluación de la expresión:
+
+*   **`string`:** se agregan las clases CSS enumeradas en la cadena (delimitadas por espacios). Estas clases pueden venir escritas entre comillas simples dentro del `ngClass` o llamadas desde el `component.ts` desde alguna variable
+    ```html
+    <p [ngClass]="'first second'">...</p>
+    <p [ngClass]="variable|stringExp|arrayExp|objExp">...</p>
+    ```
+*   **`Array`:** se agregan las clases CSS declaradas como elementos Array.
+    ```html
+    <p [ngClass]="['first', 'second']">...</p>
+    ```
+*   **`Object`:** las claves son clases CSS que se agregan cuando la expresión dada en el valor se evalúa como un valor `true`, de lo contrario, se eliminan.
+    ```html
+    <p [ngClass]="{'first': true, 'second': true, 'third': false}">...</p>
+    <p [ngClass]="{'class1 class2 class3' : true}">...</p>
+    ```
+
+#### ngSwitch
+La directiva ngSwitch es una directiva de atributo que evalúa una determinada variable. La misma se usa con otras 2 directivas:
+* **`ngSwitchCase`**: Permite mostrar un elemento HTML dependiendo del valor de la variable evaluada en la directiva ngSwitch.
+* **`ngSwitchDefault`**: Mostrará un elemento HTML en el caso de que no se muestre ningún ngSwitchCase. Esta directiva debe colocarse al final de todos los ngSwitchCase.
+
+
+```ts
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-ng-switch',
+  templateUrl: './ng-switch.component.html',
+  styles: [
+  ]
+})
+export class NgSwitchComponent {
+  alerta:string = 'info';
+  constructor() { }
+}
+```
+```html
+<!--Evalua el elemento 'alerta'-->
+<div [ngSwitch]="alerta">
+    <div *ngSwitchCase="'success'">success</div>
+    <div *ngSwitchCase="'info'">info</div>
+    <div *ngSwitchCase="'warning'">warning</div>
+    <div *ngSwitchDefault>danger</div>
+</div>
 ```
 
 
