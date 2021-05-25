@@ -1,6 +1,6 @@
 # Curso Base de Angular
 
-* [Estructura de un proyecto en Angular](#estructura-de-un-proyecto-en-angular)
+* [Proyecto de Angular](#proyecto-de-angular)
 * [Combados básicos](#combados-básicos)
 * [Estructura de un proyecto de Angular](#estructura-de-un-proyecto-de-angular)
 * [Componentes](#componentes)
@@ -19,6 +19,7 @@
   * [RouterLink y RouterLinkActive](#routerlink-y-routerlinkactive)
   * [Router](#router)
   * [ActivatedRoute](#activatedroute)  
+  * [Rutas Anidadas](#rutas-anidadas)  
 * [Decoradores](#decoradores)
   * [@Input](#input)
   * [@Output](#output)
@@ -43,10 +44,20 @@
 * [Storage](#storage)
   * [Local Storage](#local-storage)
   * [Session Storage](#session-storage)
+* [Ciclo de Vida de un componente](#ciclo-de-vida-de-un-componente)
+  * [ngOnChanges](#ngonchanges)
+  * [ngOnInit](#ngoninit)
+  * [ngDoCheck](#ngdocheck)
+  * [ngAfterContentInit](#ngaftercontentinit)
+  * [ngAfterContentChecked](#ngaftercontentchecked)
+  * [ngAfterViewInit](#ngafterviewinit)
+  * [ngAfterViewChecked](#ngafterviewchecked)
+  * [ngOnDestroy](#ngondestroy)
+
 
 
  
-## Estructura de un proyecto en Angular
+## Proyecto de Angular
 Angular es un lenguaje basado en `componentes`, por lo general una app de angular se basa en múltiples componentes, como pudiesen ser el menú de navegación, barra lateral, páginas y subpáginas, pie de páginas, etc.
 
 <img src="img/componentes_angular.png" width="auto;"/>
@@ -63,6 +74,7 @@ Las `directivas estructurales` son instrucciones que le indicarán a la sección
     * Usamos la bandera **`-s`**`(--inline-style)` para generar componentes sin el archivo de estilos.
     * Usamos la bandera **`-t`**`(--inline-template)` Incluye la plantilla HTML en el component.ts.
     * Usamos la bandera **`--skip-tests`** para generar componentes sin el archivo `.spec`.
+    * Usamos la bandera **`--flat`** para generar componentes en la ruta principal o en una especifica sin crear una carpeta que haga alusión al nombre del mismo.
 *   **`ng generate service ruta`:** Crea un servicio en la ruta indicada, por default lo crea en la carpeta `app`, podemos abreviar la petición `ng g s services/spotify`, Este comando creará el servicio en la ruta `src/app/services/spotify.service.ts`.
     * Usamos la bandera **`--skip-tests`** para generar el servicio sin el archivo `.spec`.
 *   **`ng generate directive ruta`:** Crea una directiva personalizada en la ruta indicada, por default lo crea en la carpeta `app`, podemos abreviar la petición `ng g d directives/resaltado`, Este comando creará la directiva en la ruta `src/app/directives/resaltado/resaltado.directive.ts`.
@@ -232,7 +244,7 @@ export class ResaltadoDirective {
 }
 ```
 
-Podemos hacer uso de dicha directiva desde nuestro html llamandola en la etiqueta de nuestra preferencia
+Podemos hacer uso de dicha directiva desde nuestro html llamándola en la etiqueta de nuestra preferencia
 ```html
 <p appResaltado> Hola mundo</p>
 ```
@@ -259,7 +271,7 @@ export class ResaltadoDirective {
   constructor(private elementRef:ElementRef) {}
 }
 ```
-De igual manera podremos mandar parametros a nuestra directiva personalizada desde nuestro HTML, para ello basta con poner entre llaves nuestra directiva e igualarla con el parametro a mandar, en nuestro archivo TS de nuestra directiva debemos usar el decorador [@Input](#input) a fin de recibir el parametro a usar
+De igual manera podremos mandar parámetros a nuestra directiva personalizada desde nuestro HTML, para ello basta con poner entre llaves nuestra directiva e igualarla con el parámetro a mandar, en nuestro archivo TS de nuestra directiva debemos usar el decorador [@Input](#input) a fin de recibir el parámetro a usar
 ```html
 <p [appResaltado] = "'orange'">Hola mundo</p>
 ```
@@ -747,6 +759,83 @@ export class ArtistaComponent {
 }
 ```
 En este ejemplo al objeto de tipo `AtivatedRoute` usa una propiedad llamada `params` que es un observable el cuál a través del método `suscribe()` nos permitirá estar atento a los cambios en los parámetros enviados al componente. Podemos usar los [Operadores RxJS.](#operadores-rxjs)
+
+Para obtener los parametros del las rutas padres al momento de usar [rutas anidadas o rutas hijas](#rutas-anidadas), basta con estar dentro del componente hijo y usar la misma sintaxis anteriormente usada pero agregando la propiedad `parent` quedando de la siguiente manera.
+```ts
+this.activatedRoute.parent.params.subscribe(data =>{
+  console.log(data)
+}
+```
+
+#### Rutas Anidadas 
+Las rutas anidadas o rutas hijas son rutas que por cuestiones de usabilidad anidamos a las navegaciones a fin de no perder/recargar la información obtenida por la ruta padre. Por ejemplo, en una subpágina de `usuarios` deseamos mostrar multiple información del mismo, para ello debemos dirigirnos a nuestro archivo de rutas y en el `path` del usuario agregamos la propiedad `children` el cual es un arreglo de rutas
+```ts
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
+import { HomeComponent } from './components/home/home.component';
+import { UsuarioDetalleComponent } from './components/usuario/usuario-detalle.component';
+import { UsuarioEditarComponent } from './components/usuario/usuario-editar.component';
+import { UsuarioNuevoComponent } from './components/usuario/usuario-nuevo.component';
+import { UsuarioComponent } from './components/usuario/usuario.component';
+
+
+const ROUTES: Routes = [
+    { path: 'home', component: HomeComponent },
+    {
+        path: 'usuario/:id', component: UsuarioComponent, children: [
+            { path: 'nuevo', component: UsuarioNuevoComponent },
+            { path: 'detalle', component: UsuarioDetalleComponent },
+            { path: 'editar', component: UsuarioEditarComponent }
+        ]
+    },
+    { path: '**', pathMatch: 'full', redirectTo: 'home' }
+];
+
+@NgModule({
+    imports: [RouterModule.forRoot(ROUTES)],
+    exports: [RouterModule]
+})
+export class AppRoutingModule { }
+```
+Para renderizar las rutas hijas debemos agregar la etiqueta `router-outlet` en el HTML del componente padre
+```html
+<router-outlet></router-outlet>
+```
+En caso de desear renderizar una ruta hija por default basta con colocar el `path '**'` a nuestras rutas hijas
+```ts
+const ROUTES: Routes = [
+    { path: 'home', component: HomeComponent },
+    {
+        path: 'usuario/:id', component: UsuarioComponent, children: [
+            { path: 'nuevo', component: UsuarioNuevoComponent },
+            { path: 'detalle', component: UsuarioDetalleComponent },
+            { path: 'editar', component: UsuarioEditarComponent },
+            { path: '**', pathMatch: 'full', redirectTo: 'nuevo' }
+        ]
+    },
+    { path: '**', pathMatch: 'full', redirectTo: 'home' }
+];
+```
+Cuando existen una gran cantidad de rutas hijas es más practico crear un archivo personalizado de solo las rutas y luego exportarla en nuestro `app.route.ts`
+```ts
+import { Routes } from '@angular/router';
+import { UsuarioDetalleComponent } from './usuario-detalle.component';
+import { UsuarioEditarComponent } from './usuario-editar.component';
+import { UsuarioNuevoComponent } from './usuario-nuevo.component';
+
+export const USUARIO_ROUTES: Routes = [
+    { path: 'nuevo', component: UsuarioNuevoComponent },
+    { path: 'detalle', component: UsuarioDetalleComponent },
+    { path: 'editar', component: UsuarioEditarComponent },
+    { path: '**', pathMatch: 'full', redirectTo: 'nuevo' }    
+];
+```
+Dando como resultado un path del tipo
+```ts
+{ path: 'usuario/:id', component: UsuarioComponent, children: USUARIO_ROUTES},
+```
+En caso de desear obtener los parametros enviados por el padre dentro de una ruta hija debemos hacer uso del [ActivatedRoute](#activatedroute) 
+
 
 ## Decoradores
 Un decorador es una clase especial de declaración que puede acoplarse a una clase, método, propiedad o parámetro y extiende una función agregandole información y funcionalidad. Los decoradores se reconocen ya que inician con un `@` y se expresan de la siguiente manera
