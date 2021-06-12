@@ -72,7 +72,7 @@ Las `directivas estructurales` son instrucciones que le indicarán a la sección
     * Usamos la bandera **`-o`** para indicar que una vez que cargue, abra el navegador por defecto `ng serve -o`.
 *   **`ng generate component ruta`:** Crea un nuevo componente en nuestro proyecto de angular en la ruta indicada, por default lo cera en la carpeta `app`, podemos abreviar la petición `ng g c components/footer`, Este comando creará el componente en la ruta `src/app/components/footer/footer.component.ts`.
     * Usamos la bandera **`-s`**`(--inline-style)` para generar componentes sin el archivo de estilos.
-    * Usamos la bandera **`-t`**`(--inline-template)` Incluye la plantilla HTML en el component.ts.
+    * Usamos la bandera **`-t`**`(--inline-template)` para generar componentes sin la plantilla HTML en el component.ts.
     * Usamos la bandera **`--skip-tests`** para generar componentes sin el archivo `.spec`.
     * Usamos la bandera **`--flat`** para generar componentes en la ruta principal o en una especifica sin crear una carpeta que haga alusión al nombre del mismo.
 *   **`ng generate service ruta`:** Crea un servicio en la ruta indicada, por default lo crea en la carpeta `app`, podemos abreviar la petición `ng g s services/spotify`, Este comando creará el servicio en la ruta `src/app/services/spotify.service.ts`.
@@ -1333,4 +1333,175 @@ sessionStorage.clear();
 ```
 
 
+## Ciclo de Vida de un componente
+El ciclo de vida de un componente o `lifecycle hook` esta compuesto por 8 etapas denominadas `lifecycle hook event` o `evento de enlace de ciclo de vida`
 
+<img src="img/ciclo_vida.png" width="auto;"/>
+
+#### ngOnChanges
+Este evento se ejecuta cada vez que se cambia un valor de un input control dentro de un componente. Se activa primero cuando se cambia el valor de una propiedad vinculada. Siempre recibe un change data map o mapa de datos de cambio, que contiene el valor actual y anterior de la propiedad vinculada envuelta en un SimpleChange
+```ts
+import { Component, OnChanges } from '@angular/core';
+
+@Component({
+  selector: 'app-home',
+  template: `
+    <app-ng-style></app-ng-style>`,
+  styles: [
+  ]
+})
+export class HomeComponent implements OnChanges {
+
+  constructor() {}
+
+ngOnChanges(){
+  console.log("ngOnChanges");
+}
+```
+
+#### ngOnInit
+Se ejecuta una vez que Angular ha desplegado los data-bound properties(variables vinculadas a datos) o cuando el componente ha sido inicializado, una vez que ngOnChanges se haya ejecutado. Este evento es utilizado principalmente para inicializar la data en el componente.
+```ts
+import { Component, OnInit } from '@angular/core';
+
+@Component({
+  selector: 'app-home',
+  template: `
+    <app-ng-style></app-ng-style>`,
+  styles: [
+  ]
+})
+export class HomeComponent implements OnInit {
+
+  constructor() {}
+
+ngOnInit(){
+  console.log("ngOnInit");
+}
+```
+
+#### ngDoCheck
+Se activa cada vez que se verifican las propiedades de entrada de un componente. Este método nos permite implementar nuestra propia lógica o algoritmo de detección de cambios personalizado para cualquier componente.
+```ts
+import { Component, DoCheck } from '@angular/core';
+
+@Component({
+  selector: 'app-home',
+  template: `
+    <app-ng-style></app-ng-style>`,
+  styles: [
+  ]
+})
+export class HomeComponent implements DoCheck {
+
+  constructor() {}
+
+ngDoCheck(){
+  console.log("ngDoCheck");
+}
+```
+
+#### ngAfterContentInit
+Se ejecuta cuando Angular realiza cualquier muestra de contenido dentro de las vistas de componentes y justo después de ngDoCheck. Actuando una vez que todas las vinculaciones del componente deban verificarse por primera vez. Está vinculado con las inicializaciones del componente hijo.
+```ts
+import { Component, AfterContentInit } from '@angular/core';
+
+@Component({
+  selector: 'app-home',
+  template: `
+    <app-ng-style></app-ng-style>`,
+  styles: [
+  ]
+})
+export class HomeComponent implements AfterContentInit {
+
+  constructor() {}
+
+ngAfterContentInit(){
+  console.log("ngAfterContentInit");
+}
+```
+
+#### ngAfterContentChecked
+Se ejecuta cada vez que el contenido del componente ha sido verificado por el mecanismo de detección de cambios de Angular; se llama después del método ngAfterContentInit. Este también se invoca en cada ejecución posterior de ngDoCheck y está relacionado principalmente con las inicializaciones del componente hijo.
+```ts
+import { Component, AfterContentChecked } from '@angular/core';
+
+@Component({
+  selector: 'app-home',
+  template: `
+    <app-ng-style></app-ng-style>`,
+  styles: [
+  ]
+})
+export class HomeComponent implements AfterContentChecked {
+
+  constructor() {}
+
+ngAfterContentChecked(){
+  console.log("ngAfterContentChecked");
+}
+```
+
+#### ngAfterViewInit
+Se ejecuta cuando la vista del componente se ha inicializado por completo. Este método se inicializa después de que Angular ha inicializado la vista del componente y las vistas secundarias. Se llama después de ngAfterContentChecked. Solo se aplica a los componentes.
+```ts
+import { Component, AfterViewInit } from '@angular/core';
+
+@Component({
+  selector: 'app-home',
+  template: `
+    <app-ng-style></app-ng-style>`,
+  styles: [
+  ]
+})
+export class HomeComponent implements AfterViewInit {
+
+  constructor() {}
+
+ngAfterViewInit(){
+  console.log("ngAfterViewInit");
+}
+```
+
+#### ngAfterViewChecked
+Se ejecuta después del método ngAfterViewInit y cada vez que la vista del componente verifique cambios. También se ejecuta cuando se ha modificado cualquier enlace de las directivas secundarias. Por lo tanto, es muy útil cuando el componente espera algún valor que proviene de sus componentes secundarios.
+```ts
+import { Component, AfterViewChecked } from '@angular/core';
+
+@Component({
+  selector: 'app-home',
+  template: `
+    <app-ng-style></app-ng-style>`,
+  styles: [
+  ]
+})
+export class HomeComponent implements AfterViewChecked {
+
+  constructor() {}
+
+ngAfterViewChecked(){
+  console.log("ngAfterViewChecked");
+}
+```
+
+#### ngOnDestroy
+Este método se ejecutará justo antes de que Angular destruya los componentes. Es muy útil para darse de baja de los observables y desconectar los event handlers para evitar memory leaks o fugas de memoria.
+```ts
+import { Component, OnDestroy } from '@angular/core';
+
+@Component({
+  selector: 'app-home',
+  template: `
+    <app-ng-style></app-ng-style>`,
+  styles: [
+  ]
+})
+export class HomeComponent implements OnDestroy {
+
+  constructor() {}
+
+ngOnDestroy(){
+  console.log("ngOnDestroy");
+}
+```
