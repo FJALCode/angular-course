@@ -53,6 +53,7 @@
   * [ngAfterViewInit](#ngafterviewinit)
   * [ngAfterViewChecked](#ngafterviewchecked)
   * [ngOnDestroy](#ngondestroy)
+* [Formularios]
 
 
 
