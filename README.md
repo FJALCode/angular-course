@@ -4,6 +4,14 @@
 * [Combados básicos](#combados-básicos)
 * [Estructura de un proyecto de Angular](#estructura-de-un-proyecto-de-angular)
 * [Componentes](#componentes)
+  * [ngOnChanges](#ngonchanges)
+  * [ngOnInit](#ngoninit)
+  * [ngDoCheck](#ngdocheck)
+  * [ngAfterContentInit](#ngaftercontentinit)
+  * [ngAfterContentChecked](#ngaftercontentchecked)
+  * [ngAfterViewInit](#ngafterviewinit)
+  * [ngAfterViewChecked](#ngafterviewchecked)
+  * [ngOnDestroy](#ngondestroy)
 * [Servicios](#servicios)
 * [Directivas](#directivas)
 * [Módulo](#módulo)
@@ -23,6 +31,7 @@
 * [Decoradores](#decoradores)
   * [@Input](#input)
   * [@Output](#output)
+* [Guard](#guard)
 * [Pipes](#pipes)
   * [Uppercase](#uppercase)
   * [Lowercase](#lowercase)
@@ -37,23 +46,14 @@
   * [DomSeguro](#domseguro)  
 * [Peticiones HTTP](#peticiones-http)
 * [RxJS](#rxjs)
-  * [Map()](#map)
   * [Pipe()](#pipe)
+  * [Map()](#map)
   * [Suscribe()](#suscribe)   
   * [Operadores RxJs vs Función de Orden Superior](#operadores-rxjs-vs-función-de-orden-superior)
 * [Storage](#storage)
   * [Local Storage](#local-storage)
   * [Session Storage](#session-storage)
-* [Ciclo de Vida de un componente](#ciclo-de-vida-de-un-componente)
-  * [ngOnChanges](#ngonchanges)
-  * [ngOnInit](#ngoninit)
-  * [ngDoCheck](#ngdocheck)
-  * [ngAfterContentInit](#ngaftercontentinit)
-  * [ngAfterContentChecked](#ngaftercontentchecked)
-  * [ngAfterViewInit](#ngafterviewinit)
-  * [ngAfterViewChecked](#ngafterviewchecked)
-  * [ngOnDestroy](#ngondestroy)
-* [Formularios]
+* [Formularios](#formularios)
 
 
 
@@ -81,6 +81,8 @@ Las `directivas estructurales` son instrucciones que le indicarán a la sección
 *   **`ng generate directive ruta`:** Crea una directiva personalizada en la ruta indicada, por default lo crea en la carpeta `app`, podemos abreviar la petición `ng g d directives/resaltado`, Este comando creará la directiva en la ruta `src/app/directives/resaltado/resaltado.directive.ts`.
     * Usamos la bandera **`--skip-tests`** para generar la directiva sin el archivo `.spec`.
 *   **`ng generate pipe ruta`:** Crea un pipe personalizado en la ruta indicada, por default lo crea en la carpeta `app`, podemos abreviar la petición `ng g p pipes/capitalizado`, Este comando creará el pipe en la ruta `src/app/pipes/capitalizado/capitalizado.pipe.ts`.
+*   **`ng generate guard ruta`:** Crea un guard en la ruta indicada, por default lo crea en la carpeta `app`, podemos abreviar la petición `ng g guard guards/auth`, Este comando creará la directiva en la ruta `src/app/guards/guard/auth.guard.ts`.
+    * Usamos la bandera **`--skip-tests`** para generar el guard sin el archivo `.spec`.
 
 
 ## Estructura de un proyecto de Angular
@@ -166,6 +168,178 @@ import { HeaderComponent } from './components/header/header.component'
 export class AppModule { }
 ```
 
+El ciclo de vida de un componente o `lifecycle hook` esta compuesto por 8 etapas denominadas `lifecycle hook event` o `evento de enlace de ciclo de vida`
+
+<img src="img/ciclo_vida.png" width="auto;"/>
+
+
+#### ngOnChanges
+Este evento se ejecuta cada vez que se cambia un valor de un input control dentro de un componente. Se activa primero cuando se cambia el valor de una propiedad vinculada. Siempre recibe un change data map o mapa de datos de cambio, que contiene el valor actual y anterior de la propiedad vinculada envuelta en un SimpleChange
+```ts
+import { Component, OnChanges } from '@angular/core';
+
+@Component({
+  selector: 'app-home',
+  template: `
+    <app-ng-style></app-ng-style>`,
+  styles: [
+  ]
+})
+export class HomeComponent implements OnChanges {
+
+  constructor() {}
+
+ngOnChanges(){
+  console.log("ngOnChanges");
+}
+```
+
+#### ngOnInit
+Se ejecuta una vez que Angular ha desplegado los data-bound properties(variables vinculadas a datos) o cuando el componente ha sido inicializado, una vez que ngOnChanges se haya ejecutado. Este evento es utilizado principalmente para inicializar la data en el componente.
+```ts
+import { Component, OnInit } from '@angular/core';
+
+@Component({
+  selector: 'app-home',
+  template: `
+    <app-ng-style></app-ng-style>`,
+  styles: [
+  ]
+})
+export class HomeComponent implements OnInit {
+
+  constructor() {}
+
+ngOnInit(){
+  console.log("ngOnInit");
+}
+```
+
+#### ngDoCheck
+Se activa cada vez que se verifican las propiedades de entrada de un componente. Este método nos permite implementar nuestra propia lógica o algoritmo de detección de cambios personalizado para cualquier componente.
+```ts
+import { Component, DoCheck } from '@angular/core';
+
+@Component({
+  selector: 'app-home',
+  template: `
+    <app-ng-style></app-ng-style>`,
+  styles: [
+  ]
+})
+export class HomeComponent implements DoCheck {
+
+  constructor() {}
+
+ngDoCheck(){
+  console.log("ngDoCheck");
+}
+```
+
+#### ngAfterContentInit
+Se ejecuta cuando Angular realiza cualquier muestra de contenido dentro de las vistas de componentes y justo después de ngDoCheck. Actuando una vez que todas las vinculaciones del componente deban verificarse por primera vez. Está vinculado con las inicializaciones del componente hijo.
+```ts
+import { Component, AfterContentInit } from '@angular/core';
+
+@Component({
+  selector: 'app-home',
+  template: `
+    <app-ng-style></app-ng-style>`,
+  styles: [
+  ]
+})
+export class HomeComponent implements AfterContentInit {
+
+  constructor() {}
+
+ngAfterContentInit(){
+  console.log("ngAfterContentInit");
+}
+```
+
+#### ngAfterContentChecked
+Se ejecuta cada vez que el contenido del componente ha sido verificado por el mecanismo de detección de cambios de Angular; se llama después del método ngAfterContentInit. Este también se invoca en cada ejecución posterior de ngDoCheck y está relacionado principalmente con las inicializaciones del componente hijo.
+```ts
+import { Component, AfterContentChecked } from '@angular/core';
+
+@Component({
+  selector: 'app-home',
+  template: `
+    <app-ng-style></app-ng-style>`,
+  styles: [
+  ]
+})
+export class HomeComponent implements AfterContentChecked {
+
+  constructor() {}
+
+ngAfterContentChecked(){
+  console.log("ngAfterContentChecked");
+}
+```
+
+#### ngAfterViewInit
+Se ejecuta cuando la vista del componente se ha inicializado por completo. Este método se inicializa después de que Angular ha inicializado la vista del componente y las vistas secundarias. Se llama después de ngAfterContentChecked. Solo se aplica a los componentes.
+```ts
+import { Component, AfterViewInit } from '@angular/core';
+
+@Component({
+  selector: 'app-home',
+  template: `
+    <app-ng-style></app-ng-style>`,
+  styles: [
+  ]
+})
+export class HomeComponent implements AfterViewInit {
+
+  constructor() {}
+
+ngAfterViewInit(){
+  console.log("ngAfterViewInit");
+}
+```
+
+#### ngAfterViewChecked
+Se ejecuta después del método ngAfterViewInit y cada vez que la vista del componente verifique cambios. También se ejecuta cuando se ha modificado cualquier enlace de las directivas secundarias. Por lo tanto, es muy útil cuando el componente espera algún valor que proviene de sus componentes secundarios.
+```ts
+import { Component, AfterViewChecked } from '@angular/core';
+
+@Component({
+  selector: 'app-home',
+  template: `
+    <app-ng-style></app-ng-style>`,
+  styles: [
+  ]
+})
+export class HomeComponent implements AfterViewChecked {
+
+  constructor() {}
+
+ngAfterViewChecked(){
+  console.log("ngAfterViewChecked");
+}
+```
+
+#### ngOnDestroy
+Este método se ejecutará justo antes de que Angular destruya los componentes. Es muy útil para darse de baja de los observables y desconectar los event handlers para evitar memory leaks o fugas de memoria.
+```ts
+import { Component, OnDestroy } from '@angular/core';
+
+@Component({
+  selector: 'app-home',
+  template: `
+    <app-ng-style></app-ng-style>`,
+  styles: [
+  ]
+})
+export class HomeComponent implements OnDestroy {
+
+  constructor() {}
+
+ngOnDestroy(){
+  console.log("ngOnDestroy");
+}
+```
 
 ## Servicios
 Los servicios  son clases que se encargan de acceder a los datos para entregarlos a los componentes, lo bueno de esto es que se puede reaprovechar servicios para distintos componentes. Para la creación de servicios podemos usar el angular CLI o hacerlo manualmente creando una carpeta `service` dentro de app y creando nuestro archivo bajo la nomenclatura `name.service.ts`
@@ -904,6 +1078,39 @@ Para poder recibir los datos desde el componente padre debemos llamar la propied
     </app-heroe-tarjeta>
 ```
 
+## Guard
+Los Guards en Angular, son middlewares que se ejecutan antes de cargar una ruta y determinan si se puede cargar dicha ruta o no, es especialmente util ya que evitamos que los usuarios vean una interfaz a la que no tienen acceso
+
+* **CanActivate:** Mira si el usuario puede acceder a una página determinada.
+* **CanActivateChild:** Mira si el usuario puede acceder a las páginas hijas de una determinada ruta.
+* **CanLoad:** Antes de cargar los recursos `assets` de la ruta.
+* **CanDeactivate:** Antes de intentar salir de la ruta actual, usualmente utilizado para evitar salir de una ruta, si no se han guardado los datos.
+
+```ts
+import { Injectable } from '@angular/core';
+import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, UrlTree } from '@angular/router';
+import { Observable } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AuthGuard implements CanActivate {
+  canActivate(
+    next: ActivatedRouteSnapshot,
+    state: RouterStateSnapshot): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
+    return true;
+  }
+}
+```
+Como middleware, estos componentes se ejecutan de manera intermedia antes de determinadas acciones y si retorna `true` la ruta seguiría su carga normal, en caso negativo, el Guard retornaría `false` y la ruta no se cargaría.`
+Para poder usar los guards debemos importarlos en la sección de `providers` en nuestro `app.module.ts` y agregarlo en nuestro archivo de rutas, en las ruta(s) que lo requieran
+```ts
+providers: [AuthGuard]
+```
+```ts
+{path:'home', component: HomeComponent, canActivate:[AuthGuard]}
+```
+
 ## Pipes
 Los pipes son herramientas de Angular que nos permitirán transformar visualmente la información (no cambián el valor de la misma), entre los pipes tenemos:
 
@@ -1210,22 +1417,6 @@ Se compone basicamente de los siguientes elementos:
 *   **`Operador`:** Función para manipular los eventos siguiendo los principios de la programación funcional.
 > Fuente de la información [acá](http://blog.enriqueoriol.com/2019/04/aprende-rxjs-3.html) y [acá](https://pablomagaz.com/blog/como-funcionan-operadores-rxjs)
 
-
-#### Map()
-El operador `Map` es llamado operador de transformación ya que nos permitirá manipular los datos recibidos y retornar un nuevo tipo de información más pulidad y precisa para la funcionalidad que estemos desarrollando sin tener que trabajar con el objeto entero.
-```ts
-import { of } from 'rxjs';
-import { map } from 'rxjs/operators';
-
-const obs = of({name: 'John Wayne', age: 72})
-const mapped = obs.pipe(
-                  map(v => v.name));
-
-mapped.subscribe(name => console.log (name));
-```
-En este ejemplo el flujo de evento de la constante `obs` incluye un objeto con nombre y edad, como queremos obtener solo el nombre usamos el operador `map()`para retornar el dato a usar.
-
-
 #### Pipe()
 El método `pipe()` permitirá ejecutar uno o varios operadores simultaneamente según tengamos la necesidad combinandolos y arrojando 1 solo resultado.
 ```ts
@@ -1240,6 +1431,21 @@ const mapped = obs.pipe(
 mapped.subscribe(name => console.log (name));
 ```
 Como se aprecia el método `pipe()` recibe un array de operadores, de modo que cada operador va modificando el flujo de datos.
+
+#### Map()
+El operador `Map` es llamado operador de transformación ya que nos permitirá manipular los datos recibidos y retornar un nuevo tipo de información más pulidad y precisa para la funcionalidad que estemos desarrollando sin tener que trabajar con el objeto entero.
+```ts
+import { of } from 'rxjs';
+import { map } from 'rxjs/operators';
+
+const obs = of({name: 'John Wayne', age: 72})
+const mapped = obs.pipe(
+                  map(v => v.name));
+
+mapped.subscribe(name => console.log (name));
+```
+En este ejemplo el flujo de evento de la constante `obs` incluye un objeto con nombre y edad, como queremos obtener solo el nombre usamos el operador `map()`para retornar el dato a usar.
+En caso que la petición a usar retorne algún tipo de error (un buen ejemplo al usar una petición de tipo `http`), provocará que el map no sea ejecutado.
 
 #### Suscribe()
 El método `.suscribe()` es un método del tipo Observable. El tipo Observable es una utilidad que transmite datos de forma asíncrona o sincrónica a una variedad de componentes o servicios que se han suscrito al observable.  Su interfaz define 3 métodos (1 obligatorio y 2 opcionales):
@@ -1333,176 +1539,59 @@ sessionStorage.removeItem(Apellido);
 sessionStorage.clear();
 ```
 
+## Formularios
+Un Formulario es un documento utilizado para la recolección de datos de manera estructurada. En angular existen diversos tipos de formularios
 
-## Ciclo de Vida de un componente
-El ciclo de vida de un componente o `lifecycle hook` esta compuesto por 8 etapas denominadas `lifecycle hook event` o `evento de enlace de ciclo de vida`
+#### NgForm
+Es una directiva la cuál crea un `FormGroup` y lo vincula a un formulario para realizar un seguimiento del valor agregado del formulario y el estado de validación.
+Para poder hacer uso del `ngForm` se debe importar el `FormsModule` en el `app.module`, esto provocará que la directiva se active de forma predeterminada
 
-<img src="img/ciclo_vida.png" width="auto;"/>
-
-#### ngOnChanges
-Este evento se ejecuta cada vez que se cambia un valor de un input control dentro de un componente. Se activa primero cuando se cambia el valor de una propiedad vinculada. Siempre recibe un change data map o mapa de datos de cambio, que contiene el valor actual y anterior de la propiedad vinculada envuelta en un SimpleChange
 ```ts
-import { Component, OnChanges } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { NgModule } from '@angular/core';
+import { AppComponent } from './app.component';
+import { FormsModule } from '@angular/forms';
 
-@Component({
-  selector: 'app-home',
-  template: `
-    <app-ng-style></app-ng-style>`,
-  styles: [
-  ]
+@NgModule({
+  declarations: [AppComponent],
+  imports: [BrowserModule,
+    FormsModule],
+  providers: [],
+  bootstrap: [AppComponent]
 })
-export class HomeComponent implements OnChanges {
+export class AppModule { }
+```
+Este tipo de formularios tiene la particularidad de ser utilizados desde la plantilla(html) de nuestro componente, para ello se toman en consideración ciertas características.
 
-  constructor() {}
+* **`ngForm`**: Etiqueta base para formularios basados en template, se colocan en los `<form>` seguidos del nombre del formulario.
+* **`ngSubmit`**: Evento base de la directiva que permite recibir la notificación cuando el usuario haya activado el envío de un formulario. La función a la que llaman suele recibir el formulario de tipo NgForm
 
-ngOnChanges(){
-  console.log("ngOnChanges");
+
+```html
+<form #forms="ngForm" (ngSubmit)="onSubmit(forms)" novalidate>
+  <input name="first" ngModel required #first="ngModel">
+  <input name="last" ngModel>
+  <button>Submit</button>
+</form>
+```
+```ts
+onSubmit(forms:NgForm){
+  console.log(forms);
 }
 ```
 
-#### ngOnInit
-Se ejecuta una vez que Angular ha desplegado los data-bound properties(variables vinculadas a datos) o cuando el componente ha sido inicializado, una vez que ngOnChanges se haya ejecutado. Este evento es utilizado principalmente para inicializar la data en el componente.
-```ts
-import { Component, OnInit } from '@angular/core';
+Entre las propiedades que podemos encontrar en los formularios de tipo `ngForm` tenemos.
+* **`submitted: boolean`**: Devuelve si se ha activado el envío del formulario.
+* **`controls:[key:string]`**: Devuelve un mapa de los controles de este grupo.
 
-@Component({
-  selector: 'app-home',
-  template: `
-    <app-ng-style></app-ng-style>`,
-  styles: [
-  ]
-})
-export class HomeComponent implements OnInit {
-
-  constructor() {}
-
-ngOnInit(){
-  console.log("ngOnInit");
-}
+```html
+<form #forms="ngForm" (ngSubmit)="onSubmit(forms)">
+  <span *ngIf="registroForm.submitted && 
+  registroForm.controls['first'].errors">
+  El campo es obligatorio
+  </span>
+  <input name="first" ngModel required #first="ngModel">
+  <button>Submit</button>
+</form>
 ```
-
-#### ngDoCheck
-Se activa cada vez que se verifican las propiedades de entrada de un componente. Este método nos permite implementar nuestra propia lógica o algoritmo de detección de cambios personalizado para cualquier componente.
-```ts
-import { Component, DoCheck } from '@angular/core';
-
-@Component({
-  selector: 'app-home',
-  template: `
-    <app-ng-style></app-ng-style>`,
-  styles: [
-  ]
-})
-export class HomeComponent implements DoCheck {
-
-  constructor() {}
-
-ngDoCheck(){
-  console.log("ngDoCheck");
-}
-```
-
-#### ngAfterContentInit
-Se ejecuta cuando Angular realiza cualquier muestra de contenido dentro de las vistas de componentes y justo después de ngDoCheck. Actuando una vez que todas las vinculaciones del componente deban verificarse por primera vez. Está vinculado con las inicializaciones del componente hijo.
-```ts
-import { Component, AfterContentInit } from '@angular/core';
-
-@Component({
-  selector: 'app-home',
-  template: `
-    <app-ng-style></app-ng-style>`,
-  styles: [
-  ]
-})
-export class HomeComponent implements AfterContentInit {
-
-  constructor() {}
-
-ngAfterContentInit(){
-  console.log("ngAfterContentInit");
-}
-```
-
-#### ngAfterContentChecked
-Se ejecuta cada vez que el contenido del componente ha sido verificado por el mecanismo de detección de cambios de Angular; se llama después del método ngAfterContentInit. Este también se invoca en cada ejecución posterior de ngDoCheck y está relacionado principalmente con las inicializaciones del componente hijo.
-```ts
-import { Component, AfterContentChecked } from '@angular/core';
-
-@Component({
-  selector: 'app-home',
-  template: `
-    <app-ng-style></app-ng-style>`,
-  styles: [
-  ]
-})
-export class HomeComponent implements AfterContentChecked {
-
-  constructor() {}
-
-ngAfterContentChecked(){
-  console.log("ngAfterContentChecked");
-}
-```
-
-#### ngAfterViewInit
-Se ejecuta cuando la vista del componente se ha inicializado por completo. Este método se inicializa después de que Angular ha inicializado la vista del componente y las vistas secundarias. Se llama después de ngAfterContentChecked. Solo se aplica a los componentes.
-```ts
-import { Component, AfterViewInit } from '@angular/core';
-
-@Component({
-  selector: 'app-home',
-  template: `
-    <app-ng-style></app-ng-style>`,
-  styles: [
-  ]
-})
-export class HomeComponent implements AfterViewInit {
-
-  constructor() {}
-
-ngAfterViewInit(){
-  console.log("ngAfterViewInit");
-}
-```
-
-#### ngAfterViewChecked
-Se ejecuta después del método ngAfterViewInit y cada vez que la vista del componente verifique cambios. También se ejecuta cuando se ha modificado cualquier enlace de las directivas secundarias. Por lo tanto, es muy útil cuando el componente espera algún valor que proviene de sus componentes secundarios.
-```ts
-import { Component, AfterViewChecked } from '@angular/core';
-
-@Component({
-  selector: 'app-home',
-  template: `
-    <app-ng-style></app-ng-style>`,
-  styles: [
-  ]
-})
-export class HomeComponent implements AfterViewChecked {
-
-  constructor() {}
-
-ngAfterViewChecked(){
-  console.log("ngAfterViewChecked");
-}
-```
-
-#### ngOnDestroy
-Este método se ejecutará justo antes de que Angular destruya los componentes. Es muy útil para darse de baja de los observables y desconectar los event handlers para evitar memory leaks o fugas de memoria.
-```ts
-import { Component, OnDestroy } from '@angular/core';
-
-@Component({
-  selector: 'app-home',
-  template: `
-    <app-ng-style></app-ng-style>`,
-  styles: [
-  ]
-})
-export class HomeComponent implements OnDestroy {
-
-  constructor() {}
-
-ngOnDestroy(){
-  console.log("ngOnDestroy");
-}
-```
+Es importante saber que los nombres provenientes de los controles en el formularios guardan relación directa con la propiedad `name` de las distintas etiquetas (inputs, button, etc) de nuestro form
