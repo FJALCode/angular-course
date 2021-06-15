@@ -54,6 +54,8 @@
   * [Local Storage](#local-storage)
   * [Session Storage](#session-storage)
 * [Formularios](#formularios)
+  * [Template Forms](#template-forms)
+  * [Reactive Forms](#reactive-forms)
 
 
 
@@ -92,7 +94,10 @@ Las `directivas estructurales` son instrucciones que le indicarán a la sección
 ├── src                    //Carpeta donde se guardara el source code del api
 │   ├── app                //Carpeta estandar con la primera APP de angular.
 │   │   ├── components     //Carpeta que contendrá los componentes a crear.
-│   │   ├── service        //Carpeta que contendrá los servicios a crear.
+│   │   ├── directives     //Carpeta que contendrá las directivas a crear.
+│   │   ├── guards         //Carpeta que contendrá los guards a crear.
+│   │   ├── pipes          //Carpeta que contendrá los pipes a crear.
+│   │   ├── services       //Carpeta que contendrá los servicios a crear.
 │   │   ├── app.component.css      //Archivo de estilos del componente app.
 │   │   ├── app.component.html     //Archivo html del componente app.
 │   │   ├── app.component.spec.ts  //Archivo de pruebas automáticas del componente app
@@ -1542,9 +1547,9 @@ sessionStorage.clear();
 ## Formularios
 Un Formulario es un documento utilizado para la recolección de datos de manera estructurada. En angular existen diversos tipos de formularios
 
-#### NgForm
-Es una directiva la cuál crea un `FormGroup` y lo vincula a un formulario para realizar un seguimiento del valor agregado del formulario y el estado de validación.
-Para poder hacer uso del `ngForm` se debe importar el `FormsModule` en el `app.module`, esto provocará que la directiva se active de forma predeterminada
+#### Template Forms
+Los formularios basados en plantillas como su propio nombre lo indica poseen la mayor parte de su lógica en el `HTML`, estos formularios se basan en directivas como `NgModel` y `NgModelGroup` la cuál crea un `FormGroup` y lo vincula a un formulario para realizar un seguimiento del valor agregado del formulario y el estado de validación.
+Para poder hacer uso de este tipo de formularios se debe importar el `FormsModule` en el `app.module`, esto provocará que la directiva se active de forma predeterminada
 
 ```ts
 import { BrowserModule } from '@angular/platform-browser';
@@ -1561,11 +1566,20 @@ import { FormsModule } from '@angular/forms';
 })
 export class AppModule { }
 ```
-Este tipo de formularios tiene la particularidad de ser utilizados desde la plantilla(html) de nuestro componente, para ello se toman en consideración ciertas características.
+Los formularios basados en plantillas poseen distintas propiedades que se colocan en las diversas etiquetas 
 
-* **`ngForm`**: Etiqueta base para formularios basados en template, se colocan en los `<form>` seguidos del nombre del formulario.
-* **`ngSubmit`**: Evento base de la directiva que permite recibir la notificación cuando el usuario haya activado el envío de un formulario. La función a la que llaman suele recibir el formulario de tipo NgForm
+* **`ngForm`**: Etiqueta base para formularios basados en template, se colocan en los `<form>` seguidos del nombre del formulario. Posee diversos eventos:
+  * **`submitted: boolean`**: Devuelve si se ha activado el envío del formulario.
+  * **`controls:[key:string]`**: Devuelve un mapa de los controles de este grupo.
+* **`ngModel`**: Directiva que va acompañada de la propiedad `name` (propiedad por la cual sera nombrada la etiqueta) y generará ciertas propiedades que permitirán detectar varios eventos en las etiquetas donde este colocada. Posee diversos eventos:
+  * **`pristine: boolean | null`**: Devuelve true si el valor inicial seteado al campo no ha sido modificado.
+  * **`dirty: boolean | null`**: Devuelve true si el valor inicial seteado al campo ha sido modificado.
+  * **`untouched: boolean | null`**: Devuelve true si el campo no ha sido tocado.
+  * **`touched: boolean | null`**: Devuelve true si el campo ha sido tocado.
+  * **`valid: boolean | null`**: Devuelve true si el campo ha pasado las validaciones.
+  * **`invalid: boolean | null`**: Devuelve true si el campo no ha pasado las validaciones.
 
+* **`ngSubmit`**: Evento base de la directiva que permite recibir la notificación cuando el usuario haya activado el envío de un formulario. La función a la que llaman suele recibir el formulario de tipo NgForm, esta propiedad se colocan en los `<form>`
 
 ```html
 <form #forms="ngForm" (ngSubmit)="onSubmit(forms)" novalidate>
@@ -1579,19 +1593,3 @@ onSubmit(forms:NgForm){
   console.log(forms);
 }
 ```
-
-Entre las propiedades que podemos encontrar en los formularios de tipo `ngForm` tenemos.
-* **`submitted: boolean`**: Devuelve si se ha activado el envío del formulario.
-* **`controls:[key:string]`**: Devuelve un mapa de los controles de este grupo.
-
-```html
-<form #forms="ngForm" (ngSubmit)="onSubmit(forms)">
-  <span *ngIf="registroForm.submitted && 
-  registroForm.controls['first'].errors">
-  El campo es obligatorio
-  </span>
-  <input name="first" ngModel required #first="ngModel">
-  <button>Submit</button>
-</form>
-```
-Es importante saber que los nombres provenientes de los controles en el formularios guardan relación directa con la propiedad `name` de las distintas etiquetas (inputs, button, etc) de nuestro form
