@@ -53,9 +53,11 @@
 * [Storage](#storage)
   * [Local Storage](#local-storage)
   * [Session Storage](#session-storage)
-* [Formularios](#formularios)
-  * [Template Forms](#template-forms)
-  * [Reactive Forms](#reactive-forms)
+* [Template Forms](#template-forms)
+* [Reactive Forms](#reactive-forms)
+* [Angular Material](#angular-material)
+  * [Instalación y Configuración](#instalación-y-configuración)
+
 
 
 
@@ -650,6 +652,16 @@ Agrega y elimina clases CSS en un elemento HTML, su sintasis básica es escribir
     <p [ngClass]="{'first': true, 'second': true, 'third': false}">...</p>
     <p [ngClass]="{'class1 class2 class3' : true}">...</p>
     ```
+
+Otra manera de escribir clases en angular de manera dinamica es agregando entre corchetes la propiedad `[class]` seguida del nombre de la clase.
+```ts
+change = true;
+```
+```html
+<p [class.isValid]="change">Validamos la clase</p>
+```
+En este caso usamos el booleano change para mostrar y ocultar la clase `isValid`
+
 
 #### ngSwitch
 La directiva ngSwitch es una directiva de atributo que evalúa una determinada variable. La misma se usa con otras 2 directivas:
@@ -1544,10 +1556,7 @@ sessionStorage.removeItem(Apellido);
 sessionStorage.clear();
 ```
 
-## Formularios
-Un Formulario es un documento utilizado para la recolección de datos de manera estructurada. En angular existen diversos tipos de formularios
-
-#### Template Forms
+## Template Forms
 Los formularios basados en plantillas como su propio nombre lo indica poseen la mayor parte de su lógica en el `HTML`, estos formularios se basan en directivas como `NgModel` y `NgModelGroup` la cuál crea un `FormGroup` y lo vincula a un formulario para realizar un seguimiento del valor agregado del formulario y el estado de validación.
 Para poder hacer uso de este tipo de formularios se debe importar el `FormsModule` en el `app.module`, esto provocará que la directiva se active de forma predeterminada
 
@@ -1568,7 +1577,7 @@ export class AppModule { }
 ```
 Los formularios basados en plantillas poseen distintas propiedades que se colocan en las diversas etiquetas 
 
-* **`ngForm`**: Etiqueta base para formularios basados en template, se colocan en los `<form>` seguidos del nombre del formulario. Posee diversos eventos:
+* **`ngForm`**: Atributo base para formularios basados en template, se colocan en los `<form>` seguidos del nombre del formulario. Posee diversos eventos:
   * **`submitted: boolean`**: Devuelve si se ha activado el envío del formulario.
   * **`controls:[key:string]`**: Devuelve un mapa de los controles de este grupo.
 * **`ngModel`**: Directiva que va acompañada de la propiedad `name` (propiedad por la cual sera nombrada la etiqueta) y generará ciertas propiedades que permitirán detectar varios eventos en las etiquetas donde este colocada. Posee diversos eventos:
@@ -1589,7 +1598,59 @@ Los formularios basados en plantillas poseen distintas propiedades que se coloca
 </form>
 ```
 ```ts
-onSubmit(forms:NgForm){
+onSubmit(forms){
   console.log(forms);
 }
 ```
+Para poder obtener la información del formulario debemos agregar la propiedad `ngForm`, para ello colocamos el nombre como desearemos llamar al formulario y lo igualamos a dicha propiedad. Las función que interactuará con el formulario al realizar un click, recibirá un atributo de tipo `NgForm`
+```html
+<form #forms="ngForm" (ngSubmit)="onSubmit(formu)" #formu="ngForm">
+  <input name="first" ngModel required #first="ngModel">
+  <input name="last" ngModel>
+  <button>Submit</button>
+</form>
+```
+```ts
+onSubmit(formu:NgForm){
+  console.log(forms);
+}
+```
+En caso de desear colocar un valor predefinido a alguno de los parametros de nuestro formulario basta con igualar el `ngModel` al valor que vallamos a usar
+```ts
+usuario={
+  nombre:'Luis',
+  apellido:'Lopez'
+}
+```
+```html
+<form #forms="ngForm" (ngSubmit)="onSubmit(formu)" #formu="ngForm">
+  <input name="first" [ngModel]="usuario.nombre" required #first="ngModel">
+  <input name="last" ngModel>
+  <button>Submit</button>
+</form>
+```
+> El elemento se coloca entre `corchetes[]` para indicar que recibé un valor.
+
+> El elemento se coloca entre `parentesis()` para indicar que emite un valor.
+
+> El elemento se coloca entre `corchetes y parentesis[()]` para indicar que recibe y emite un valor. También se le conoce como la `caja de bananas`
+
+
+#### Validaciones
+
+* **Validators.required** = Comprueba que el campo sea llenado.
+* **Validators.minLength** = Comprueba que el campo cumpla con un mínimo de caracteres.
+* **Validators.maxLength** = Comprueba que el campo cumpla con un máximo de caracteres.
+* **Validators.pattern** = Comprueba que el campo cumpla con un patrón usando una expresión regular.
+* **Validators.email** = Comprueba que el campo cumpla con un patrón de correo válido.
+
+
+## Angular Material
+Angular Material es un módulo construido para Angular que permite implementar componentes con un diseño basado en Material Design.
+
+#### Instalación y Configuración
+Para la instalación desde el CLI de angular basta con agregar el siguiente comando:
+```sh
+ng add @angular/material
+```
+Esto agregará las dependencias al package, instalará la fuente roboto y fuentes del icono de Material Design en el `index.html` y agregará estilos globales en el archivo `style.css`
