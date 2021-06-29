@@ -57,7 +57,10 @@
 * [Reactive Forms](#reactive-forms)
 * [Angular Material](#angular-material)
   * [Instalación y Configuración](#instalación-y-configuración)
+  * [MatButton](#matbutton)
+  * [MatCard](#matcard)
 
+  
 
 
 
@@ -1654,3 +1657,38 @@ Para la instalación desde el CLI de angular basta con agregar el siguiente coma
 ng add @angular/material
 ```
 Esto agregará las dependencias al package, instalará la fuente roboto y fuentes del icono de Material Design en el `index.html` y agregará estilos globales en el archivo `style.css`
+
+#### MatButton
+Es un componente UI de Angular Material que renderiza `<button>` e hipervínculos `<a>`. Se importa con el módulo `MatButtonModule` en nuestro módulo a trabajar
+
+```ts
+import {MatButtonModule} from '@angular/material/button';
+
+@NgModule({
+  declarations: [AppComponent],
+  imports: [BrowserModule,BrowserAnimationsModule,MatButtonModule],
+  providers: [],
+  bootstrap: [AppComponent]
+})
+```
+Para usarlos basta con colocar alguno de los atributos en nuestra etiqueta
+
+* **mat-button** = Botón de texto rectangular sin elevación
+* **mat-raised-button** = Botón rectangular contenido con elevación
+* **mat-flat-button** = Botón contenido rectangular sin elevación
+* **mat-stroked-button** = Botón rectangular con contorno sin elevación
+* **mat-icon-button** = Botón circular con fondo transparente, destinado a contener un icono
+* **mat-fab** = Botón circular con elevación, predeterminado al color de acento del tema.
+* **mat-mini-fab** = Igual que mat-fabpero más pequeño
+
+```html
+<button mat-raised-button>
+  Click
+</button>
+```
+Los botones podrán ser coloreados en función al tema que se este utilizando usado la propiedad `color` para establecer el forndo `primary`, `accent` o `warn`.
+```html
+<button mat-raised-button color="primary">
+  Click
+</button>
+```
