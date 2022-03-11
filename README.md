@@ -55,6 +55,9 @@
   * [Session Storage](#session-storage)
 * [Template Forms](#template-forms)
 * [Reactive Forms](#reactive-forms)
+  * [FormControl](#formcontrol)
+  * [FormGroup](#formgroup)
+  * [FormBuilder](#formbuilder)
 * [Angular Material](#angular-material)
   * [Instalación y Configuración](#instalación-y-configuración)
   * [MatButton](#matbutton)
@@ -1646,6 +1649,251 @@ usuario={
 * **Validators.maxLength** = Comprueba que el campo cumpla con un máximo de caracteres.
 * **Validators.pattern** = Comprueba que el campo cumpla con un patrón usando una expresión regular.
 * **Validators.email** = Comprueba que el campo cumpla con un patrón de correo válido.
+
+
+## Reactive Forms
+Los formularios reactivos son formularios dirigidos por modelos, es decir, emplean una técnica en la que los formularios se diseñan en el componente y luego se realizan los enlaces para el HTML. Para poder hacer uso de este tipo de formularios se debe importar el `ReactiveFormsModule` en el `app.module`.
+
+```ts
+import { BrowserModule } from '@angular/platform-browser';
+import { NgModule } from '@angular/core';
+import { AppComponent } from './app.component';
+import { ReactiveFormsModule } from '@angular/forms';
+
+@NgModule({
+  declarations: [AppComponent],
+  imports: [BrowserModule,
+    ReactiveFormsModule],
+  providers: [],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+```
+
+Los formularios reactivos se deben iniciarlizar en el componente antes que se empiece a crear el html, es por ello que es recomendable hacerlo en el `constructor` o en el `ngOnInit`.
+
+Los formularios reactivos hacen uso de 3 principales clases `FormGroup` `FormControl` `FormBuilder`, un ejemplo sencillo de formulario reactivo sería
+
+```html
+<form novalidate (ngSubmit)="onSubmit()" [formGroup]="user">
+  <label>
+    <span>Username</span>
+    <input
+      type="text"
+      placeholder="Your full name"
+      formControlName="username">
+  </label>
+  <label>
+      <span>Password</span>
+      <input
+        type="password"
+        placeholder="Your passwornd"
+        formControlName="password">
+    </label>
+  <button type="submit">Sign up</button>
+</form>
+```
+
+```ts
+import { Component, OnInit } from '@angular/core';
+import { FormControl, FormGroup } from '@angular/forms';
+
+@Component({...})
+export class SignupFormComponent implements OnInit {
+  user: FormGroup;
+  ngOnInit() {
+    this.user = new FormGroup({
+      name: new FormControl(''),
+      password: new FormControl(''),
+      passwordRepeat: new FormControl('')
+    });
+  }
+}
+```
+
+#### FormControl 
+El FormControl es un objeto qué se usa en los formularios para tener un control sobre su valor y su estado en el formulario. Para registrar un control de formulario único, basta con importar la clase FormControl y crear una nueva instancia de FormControl para guardar como propiedad de clase.
+
+```ts
+import { Component } from '@angular/core';
+import { FormControl } from '@angular/forms';
+
+@Component({
+  selector: 'app-name-editor',
+  templateUrl: './name-editor.component.html',
+  styleUrls: ['./name-editor.component.css']
+})
+export class NameEditorComponent {
+  name = new FormControl('');
+}
+```
+Se usa el constructor de `FormControl` para establecer su valor inicial, que en este caso es una cadena vacía. Al crear estos controles en el componente, el mismo obtiene acceso inmediato para escuchar, actualizar y validar el estado de la entrada del formulario.
+
+Después de crear el control en la clase de componente, se debe asociar con un elemento de control de formulario en la plantilla.
+```html
+<label for="name">Name: </label>
+<input id="name" type="text" [formControl]="name">
+```
+Usando la sintaxis de enlace de plantilla, el control de formulario ahora está registrado en el elemento de entrada de `name` en la plantilla. 
+
+Los formularios reactivos tienen métodos para cambiar el valor de un control mediante el TS, lo que le brinda la flexibilidad de actualizar el valor sin la interacción del usuario. Una instancia de control de formulario puede ser `setValue()` que actualiza el valor del control en el formulario.
+```ts
+updateName() {
+  this.name.setValue('Nancy');
+}
+```
+```html
+<button (click)="updateName()">Update Name</button>
+```
+<img src="img/fornControl.png" width="auto;"/>
+
+
+#### FormGroup 
+Un grupo de formularios o FormGroup es un objeto que define un formulario con un conjunto fijo de controles que puede administrar al mismo tiempo, el estado de este objeto depende del estado de todos sus objetos, es decir, si uno de los FormControl es inválido, el grupo entero es inválido. Para crear un grupo de formularios hay que seguir 3 pasos.
+
+* Crear una instancia de FormGroup .
+* Asociar el modelo y la vista de FormGroup .
+* Guardar los datos del formulario.
+
+Para crear una instancia de FormGroup debemos importar `FormGroup` y `FormControl`
+```ts
+import { Component } from '@angular/core';
+import { FormGroup, FormControl } from '@angular/forms';
+
+@Component({
+  selector: 'app-profile-editor',
+  templateUrl: './profile-editor.component.html',
+  styleUrls: ['./profile-editor.component.css']
+})
+export class ProfileEditorComponent {
+  profileForm = new FormGroup({
+    firstName: new FormControl(''),
+    lastName: new FormControl(''),
+  });
+}
+```
+Los `FormControl` ahora se recopilan dentro del `FormGroup`. Una instancia de `FormGroup` proporciona su valor de modelo como un objeto reducido de `FormControl`. Una instancia de `FormGroup` tiene las mismas propiedades (como `value` y `untouched` ) y métodos (como `setValue()`) como una de `FormControl`.
+
+Para asociar el modelo a la vista basta con con agregar la propiedad al formulario de `[formGroup]="nombreDelFormEnElTs"` y agregar la entrada `formControlName` donde lo igualaremos a la key usada en nuestro formulario, para este ejemplo sería `firstName` y `lastName`
+```html
+<form [formGroup]="profileForm">
+
+  <label for="first-name">First Name: </label>
+  <input id="first-name" type="text" formControlName="firstName">
+
+  <label for="last-name">Last Name: </label>
+  <input id="last-name" type="text" formControlName="lastName">
+
+</form>
+```
+Para guardar los datos del formulario debemos agregar el evento `ngSubmit` que escuchará el evento `submit` que generé el botón que procesará la data en el formulario y asignarle un método que recibirá las acciones a realizar
+
+```html
+<form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
+```
+
+```ts
+onSubmit() {
+  // TODO: Usa EventEmitter con el valor del formulario
+  console.log(this.profileForm.value);
+}
+```
+
+A nivel del html el formulario final quedaría
+
+```html
+<form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
+  <label for="first-name">First Name: </label>
+  <input id="first-name" type="text" formControlName="firstName">
+
+  <label for="last-name">Last Name: </label>
+  <input id="last-name" type="text" formControlName="lastName">
+
+  <p>Complete the form to enable button.</p>
+  <button type="submit" [disabled]="!profileForm.valid">Submit</button>
+</form>
+```
+
+
+#### FormBuilder 
+Es un servicio del que han de depender los componentes que quieran desacoplar el modelo de la vista (Es decir formularios por template). Con el `FormBuilder` facilitaremos el andamiaje, especialmente cuando se construyen formularios complejos. 
+Para usarlo debemos importarlo e inyectarlo desde el constructor
+
+```ts
+import { FormBuilder, FormGroup } from '@angular/forms';
+
+export class ReactiveformsComponent {
+
+  constructor(private formBuilder: FormBuilder){}
+
+}
+```
+
+Usaremos el método `group()` disponible en `FormBuilder` para crear la instancia  `FormGroup` y luego agregar controles de formulario como un objeto. Los controles se agregarán similar a como se hacen en el `FormGroup` (Key-Value), aunque se diferenciará en que no necesitará instanciarlo
+
+```ts
+import { FormBuilder, FormGroup } from '@angular/forms';
+
+export class ReactiveformsComponent {
+  form: FormGroup;
+ 
+  constructor(private formBuilder: FormBuilder){
+    this.form = formBuilder.group({
+      nombre: [''],
+      apellido: [''],
+      correo: ['']
+    });
+  }
+
+  submit() {
+    if (this.form.valid) {
+      console.log(this.form.value)
+    }
+    else{
+      alert("FILL ALL FIELDS")
+    }
+  }
+}
+}
+```
+
+A nivel del HTML se seguirá manteniendo la misma estructura que con el `FormGroup`, haciendo alusión a la misma variable
+
+```html
+<form autocomplete="off" [formGroup]="form" (ngSubmit)="submit()">
+  <div>
+    <div class="form-group row">
+      <label class="col-2 col-form-label">Nombre</label>
+      <div class="col-8">
+        <input class="form-control" type="text" placeholder="Nombre" formControlName="nombre">
+      </div>
+    </div>
+
+    <div class="form-group row">
+      <label class="col-2 col-form-label">Apellido</label>
+      <div class="col-8">
+        <input class="form-control" type="text" placeholder="Apellido" formControlName="apellido">
+      </div>
+    </div>
+  </div>
+
+  <div class="form-group row">
+    <label class="col-2 col-form-label">Correo</label>
+    <div class="col-8">
+      <input class="form-control" type="email" placeholder="Correo electrónico" formControlName="correo">
+    </div>
+  </div>
+
+  <div class="form-group row">
+    <label class="col-2 col-form-label">&nbsp;</label>
+    <div class="input-group col-md-8">
+      <button type="submit" class="btn btn-outline-primary btn-block">
+        Guardar
+      </button>
+    </div>
+  </div>
+</form>
+```
 
 
 ## Angular Material
