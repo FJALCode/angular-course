@@ -58,6 +58,9 @@
   * [FormControl](#formcontrol)
   * [FormGroup](#formgroup)
   * [FormBuilder](#formbuilder)
+  * [Validators](#validators)
+    * [Validaciones sincrónicas](#validaciones-sincrónicas)
+    * [Validaciones asíncronas](#validaciones-asíncronas)
 * [Angular Material](#angular-material)
   * [Instalación y Configuración](#instalación-y-configuración)
   * [MatButton](#matbutton)
@@ -1813,7 +1816,24 @@ A nivel del html el formulario final quedaría
   <button type="submit" [disabled]="!profileForm.valid">Submit</button>
 </form>
 ```
+Para hacer referencia a cualquier de los `FormControl` internos de un `FormGroup` basta con usar la propiedad `get()` o `controls` dando como resultado
+```ts
+export class ProfileEditorComponent {
+  profileForm = new FormGroup({
+    firstName: new FormControl(''),
+    lastName: new FormControl(''),
+  });
+  referencia(){
+    // Opción con get
+    this.profileForm.get('firstName').invalid
+    // Opción con controls
+    this.profileForm.controls['firstName'].invalid
+    //Otra forma de opción con controls
+    this.profileForm.controls.firstName.invalid
+  }
+}
 
+```
 
 #### FormBuilder 
 Es un servicio del que han de depender los componentes que quieran desacoplar el modelo de la vista (Es decir formularios por template). Con el `FormBuilder` facilitaremos el andamiaje, especialmente cuando se construyen formularios complejos. 
@@ -1894,6 +1914,137 @@ A nivel del HTML se seguirá manteniendo la misma estructura que con el `FormGro
   </div>
 </form>
 ```
+
+#### Formularios Anidados
+Los `FormGroup` pueden aceptar internamente tanto instancias de `FormControl` como otras instancias de `FormGroup` hijos. A esto se le conoce como formularios anidados. Para hacer un formulario anidado se debe con
+Crear un grupo anidado desde el TS.
+Agrupa el formulario anidado en la plantilla (HTML) utilizando la directiva `formGroupName`.
+
+```ts
+import { Component } from '@angular/core';
+import { FormGroup, FormControl } from '@angular/forms';
+
+export class ProfileEditorComponent {
+  profileForm = new FormGroup({
+    firstName: new FormControl(''),
+    lastName: new FormControl(''),
+    address: new FormGroup({
+      street: new FormControl(''),
+      city: new FormControl(''),
+      state: new FormControl(''),
+      zip: new FormControl('')
+    })
+  });
+}
+```
+
+En este ejemplo, el `FormGroup` hijo `address`, se combina con los `FormControl` `firstName` y `lastName`. Esto también es replicable cuando usamos  `FormBuilder` de la siguiente manera
+
+```ts
+import { Component } from '@angular/core';
+import { FormBuilder } from '@angular/forms';
+
+export class ProfileEditorComponent {
+  profileForm = this.fb.group({
+    firstName: [''],
+    lastName: [''],
+    address: this.fb.group({
+      street: [''],
+      city: [''],
+      state: [''],
+      zip: ['']
+    }),
+  });
+
+  constructor(private fb: FormBuilder) { }
+}
+```
+A nivel de la plantilla debemos agregar el nuevo `FormGroup` usando la directiva `formGroupName` e igualandolo al nombre del elemento de tipo `FormGroup`.Los `FormControl` hijos automáticamente se relacionarán según el `formGroupName` que los antecedan.
+
+```html
+<div formGroupName="address">
+  <h2>Address</h2>
+
+  <label for="street">Street: </label>
+  <input id="street" type="text" formControlName="street">
+
+  <label for="city">City: </label>
+  <input id="city" type="text" formControlName="city">
+
+  <label for="state">State: </label>
+  <input id="state" type="text" formControlName="state">
+
+  <label for="zip">Zip Code: </label>
+  <input id="zip" type="text" formControlName="zip">
+</div>
+```
+
+Para hacer referencia a cualquier de los `FormControl` internos de un `FormGroup` hijo basta con usar la propiedad `get()` o `controls` dando como resultado
+```ts
+export class ProfileEditorComponent {
+  profileForm = new FormGroup({
+    firstName: new FormControl(''),
+    lastName: new FormControl(''),
+  });
+}
+
+export class ProfileEditorComponent {
+  profileForm = this.fb.group({
+    firstName: [''],
+    lastName: [''],
+    address: this.fb.group({
+      street: [''],
+      city: [''],
+      state: [''],
+      zip: ['']
+    }),
+  });
+
+  constructor(private fb: FormBuilder) { }
+
+  referencia(){
+    // Opción con get
+    this.profileForm.get('address.street').invalid
+    // Opción con get
+    this.profileForm.get('address').get('street').invalid
+    //Otra forma de opción con controls
+    this.profileForm.controls.address.get('street').invalid
+  }
+}
+
+```
+
+#### Validators
+Los Validators en los formularios reactivos son el proceso de revisión que verifica la correcta inserción de datos en los campos que los componente, por lo general se solían realizar agregando atributos HTML tales como el `required`. Pero todo eso ahora se realizan desde el TS, donde se podra establecer una o varias reglas de validación.
+Para su uso debemos importarlo de `@angular/forms`
+```ts
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+```
+Para utilizarse desde el TS nos dirigimos al campo donde haremos su llamado y las agregaremos después del valor
+```ts
+'field': [_value_, [validaciones_sincrónicas], [validaciones_asíncronas]]
+```
+Existirán 2 tipos de validaciones sincrónicas y asíncronas
+
+##### Validaciones sincrónicas
+Las validaciones sincrónicas son aquellas en las que no necesitamos de consultar ninguna fuente externa para comprobar los datos, como por ejemplo validar que el email tiene el formato correcto, validar que el usuario sea un adulto a partir de la edad, validar un número mínimo de caracteres etc. Entre los Validators sincrónicas más usados tendríamos.
+
+* **Validators.required** = Comprueba que el campo sea llenado. Uso `Validators.required`
+* **Validators.minLength** = Comprueba que el campo cumpla con un mínimo de caracteres. Uso `Validators.minLength(5)`
+* **Validators.maxLength** = Comprueba que el campo cumpla con un máximo de caracteres. Uso `Validators.maxLength(10)`
+* **Validators.pattern** = Comprueba que el campo cumpla con un patrón usando una expresión regular. Uso `Validators.pattern('regular_expression')`
+* **Validators.email** = Comprueba que el campo cumpla con un patrón de correo válido. Uso `Validators.email` (_no se recomienda_)
+
+```ts
+this.form = this.formBuilder.group({
+  nombre: ['', [Validators.required, Validators.minLength(5)]],
+  apellido: ['', [Validators.required, Validators.maxLength(20)]],
+  correo: ['', [Validators.pattern('[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,3}$')]]
+})
+```
+
+##### Validaciones asíncronas
+Las validaciones asíncronas son aquellas en las cuales debemos hacer una solicitud externa y de acuerdo a ello validar los datos, como por ejemplo para validar un nombre de usuario (usersname), primero debemos hacer una solicitud a nuestra base de datos y comprobar que el nombre de usuario está disponible, esto es una validación asíncrona.
 
 
 ## Angular Material
