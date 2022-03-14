@@ -57,18 +57,23 @@
 * [Reactive Forms](#reactive-forms)
   * [FormControl](#formcontrol)
   * [FormGroup](#formgroup)
+      * [FormGroup.get()](#formgroupget)
+      * [FormGroup.setValue()](#formgroupsetvalue)
+      * [FormGroup.reset()](#formgroupreset)
+      * [FormGroup.valueChanges](#formgroupvaluechanges)
+      * [FormGroup.statusChanges](#formgroupstatuschanges)
   * [FormBuilder](#formbuilder)
+  * [Nested Forms](#nested-forms)
+  * [FormArray](#formrray)
+      * [FormArray.push()](#formarraypush)
+      * [FormArray.removeAt()](#formarrayremoveat)
   * [Validators](#validators)
     * [Validaciones sincrónicas](#validaciones-sincrónicas)
-    * [Validaciones asíncronas](#validaciones-asíncronas)
+    * [Validaciones asíncronas](#validaciones-asíncronas)   
 * [Angular Material](#angular-material)
   * [Instalación y Configuración](#instalación-y-configuración)
   * [MatButton](#matbutton)
   * [MatCard](#matcard)
-
-  
-
-
 
  
 ## Proyecto de Angular
@@ -1733,6 +1738,7 @@ export class NameEditorComponent {
 Se usa el constructor de `FormControl` para establecer su valor inicial, que en este caso es una cadena vacía. Al crear estos controles en el componente, el mismo obtiene acceso inmediato para escuchar, actualizar y validar el estado de la entrada del formulario.
 
 Después de crear el control en la clase de componente, se debe asociar con un elemento de control de formulario en la plantilla.
+
 ```html
 <label for="name">Name: </label>
 <input id="name" type="text" [formControl]="name">
@@ -1832,7 +1838,65 @@ export class ProfileEditorComponent {
     this.profileForm.controls.firstName.invalid
   }
 }
+```
 
+
+
+##### FormGroup.get()
+Recupera un control secundario dado el nombre o la ruta del control.
+```ts
+this.myForm.get('controlName')
+```
+
+##### FormGroup.setValue()
+Establece el valor de `FormGroup`. Acepta un objeto que coincida con la estructura del grupo, con nombres de control como claves. En caso de faltar algún control por agregar mandará un error
+```ts
+this.form.setValue({
+  nombre: "",
+  apellido: "",
+  correo: "",
+  direccion: {
+    distrito: "",
+    ciudad: ""
+  }
+})
+```
+
+##### FormGroup.reset()
+Restablece un `FormGroup` marcando a todos los descendientes como prístinos e intactos y establece el valor de todos los descendientes en nulo.
+
+```ts
+this.myForm.reset()
+```
+
+En caso de desear predefinir valores en el reset también podemos hacerlo generando una llave  similar a como se genera en el en la propiedad [setValue()](#setvalue) aunque se diferencia de este último método en que si falta algún valor del `FormGroup` por default lo reseteará en nulo.
+
+```ts
+this.form.reset({
+  nombre: "Fernando",
+  apellido: "Antúnez",
+  correo: "fernan@gmail.com"
+})
+```
+
+##### FormGroup.valueChanges
+Un observable que emite un evento cada vez que cambia el valor del control. También emite un evento cada vez que llama a enable() o disabled().
+```ts
+// Puedes escuchar todos los campos a nivel general
+this.form.valueChanges.subscribe(value => console.log(value))
+
+// Puedes escuchar un campo en particular
+this.form.get('usuario').valueChanges.subscribe(value => console.log(value))
+```
+
+##### FormGroup.statusChanges
+Un observable que emite un evento indicando el `status` del formulario y/o campo, este estatus puede ser (valido/invalido).
+```ts
+// Puedes escuchar todos los campos a nivel general
+this.form.statusChanges.subscribe(value => console.log(value))
+
+// Puedes escuchar un campo en particular
+this.form.get('usuario').statusChanges.subscribe(value => console.log(value))
 ```
 
 #### FormBuilder 
@@ -1843,9 +1907,7 @@ Para usarlo debemos importarlo e inyectarlo desde el constructor
 import { FormBuilder, FormGroup } from '@angular/forms';
 
 export class ReactiveformsComponent {
-
   constructor(private formBuilder: FormBuilder){}
-
 }
 ```
 
@@ -1915,7 +1977,7 @@ A nivel del HTML se seguirá manteniendo la misma estructura que con el `FormGro
 </form>
 ```
 
-#### Formularios Anidados
+#### Nested Forms
 Los `FormGroup` pueden aceptar internamente tanto instancias de `FormControl` como otras instancias de `FormGroup` hijos. A esto se le conoce como formularios anidados. Para hacer un formulario anidado se debe con
 Crear un grupo anidado desde el TS.
 Agrupa el formulario anidado en la plantilla (HTML) utilizando la directiva `formGroupName`.
@@ -2014,6 +2076,85 @@ export class ProfileEditorComponent {
 
 ```
 
+#### FormArray
+Los `FormArray` son una alternativa a FormGroup para administrar cualquier número de controles sin nombre. Al igual que con las instancias de grupos de formularios, puede insertar y eliminar controles. Sin embargo, no necesita definir una clave para cada control por nombre, por lo que esta es una gran opción si no se conoce la cantidad de valores secundarios de antemano.
+
+Para definir un formulario dinámico con `FormArray` se debe.
+
+* Importar la clase FormArray.
+* Defina un control FormArray .
+* Acceda al control FormArray con un método getter.
+* Mostrar la matriz del formulario en una plantilla.
+
+Importar la clase `FormArray` de `@angular/forms` para usarse dentro de un elemento de tipo `FormGroup`. 
+```ts
+import { FormArray } from '@angular/forms';
+```
+En caso de estar utilizando el servicio `FormBuilder` ya este provee el método `FormBuilder.array()` para definir la matriz y el método `FormBuilder.control()` para llenar la matriz con un control inicial.
+```ts
+profileForm = this.fb.group({
+  firstName: ['', Validators.required],
+  lastName: [''],
+  address: this.fb.group({
+    street: [''],
+    city: [''],
+    state: [''],
+    zip: ['']
+  }),
+  aliases: this.fb.array([
+    this.fb.control('')
+  ])
+});
+```
+Para acceder al control de tipo `FormArray` desde el HTML es recomendable definir un getter que retorne una instancia del elemento de tipo `FormArray`.
+```ts
+get aliases() {
+  return this.profileForm.get('aliases') as FormArray;
+}
+```
+> **Nota**: Debido a que el control devuelto es del tipo AbstractControl , debe proporcionar un tipo explícito (en este caso `FormArray`) para acceder a la sintaxis del método para la instancia de matriz de formulario (es decir desde el HTML).
+
+
+Para agregar nuevos elementos en nuestro `FormArray` es tan sencillo como usar un método `push()` el cual inserte un elemento de tipo `FormControl`, en este caso lo usamos a través del servicio `FormBuilder`
+
+```ts
+addAlias() {
+  this.aliases.push(this.fb.control(''));
+}
+```
+Para conectar el `FormArray` del componente con la plantilla HTML ocurre de forma similar que con el `formGroupName`, acá usaremos la propiedad `formArrayName` que vinculará entre el TS y el HTML .
+
+```html
+<div formArrayName="aliases">
+  <h2>Aliases</h2>
+  <button (click)="addAlias()" type="button">+ Add another alias</button>
+
+  <div *ngFor="let alias of aliases.controls; let i=index">
+    <! - La plantilla de alias repetida ->
+    <label for="alias-{{ i }}">Alias:</label>
+    <input id="alias-{{ i }}" type="text" [formControlName]="i">
+  </div>
+</div>
+```
+En vista que los nuevos `FormControl` no poseén nombres definidos, se le asignarán de manera dinámica a través del indice.
+
+En caso que deseemos cargar data de manera predefinida al formulario se deberá hacer usando la propiedad [FormGroup.setValue()](#formgroupsetvalue) o pusheando item por item a través de un forEach
+```ts
+['comer','dormir'].forEach(value => this.myFormArray.push(this.formBuilder.control(value)))
+```
+
+##### FormArray.push()
+Inserta un nuevo `FormControl` al final de la matriz.
+```ts
+this.myFormArray.push(this.fb.control(''));
+```
+
+##### FormArray.removeAt()
+Elimina el `FormControl` en el índice dado en la matriz.
+```ts
+this.myFormArray.removeAt(index);
+```
+
 #### Validators
 Los Validators en los formularios reactivos son el proceso de revisión que verifica la correcta inserción de datos en los campos que los componente, por lo general se solían realizar agregando atributos HTML tales como el `required`. Pero todo eso ahora se realizan desde el TS, donde se podra establecer una o varias reglas de validación.
 Para su uso debemos importarlo de `@angular/forms`
@@ -2042,10 +2183,59 @@ this.form = this.formBuilder.group({
   correo: ['', [Validators.pattern('[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,3}$')]]
 })
 ```
+De manera sincrónica también podemos crear validaciones personalizadas, para ello debemos dirigirnos a donde instanciamos nuestro formulario y agregar el campo `options?` de la método `group` donde podremos agregar nuestra nueva validación, Este tipo de validaciones debén retornar un `ValidationErrors` (un objeto con un nombre que querramos y un booleano) o un `null` en caso de no existir error
+```ts
+this.form = this.fb.group(
+  {
+    password: ["", Validators.required],
+    confirmarPassword: ["", Validators.required],
+  },
+  {
+    validators: passwordIguales('password', 'confirmarPassword'),
+  }
+)
+```
+
+```ts
+passwordIguales(pass1Name: string, pass2Name: string): ValidationErrors | null {
+  return (formGroup: FormGroup) => {
+    const pass1Control = formGroup.controls[pass1Name]
+    const pass2Control = formGroup.controls[pass2Name]
+    if (pass1Control === pass2Control) {
+      pass2Control.setErrors(null);
+    } else {
+      pass2Control.setErrors({ noEsIgual: true });
+    }
+  }
+}
+```
 
 ##### Validaciones asíncronas
-Las validaciones asíncronas son aquellas en las cuales debemos hacer una solicitud externa y de acuerdo a ello validar los datos, como por ejemplo para validar un nombre de usuario (usersname), primero debemos hacer una solicitud a nuestra base de datos y comprobar que el nombre de usuario está disponible, esto es una validación asíncrona.
+Las validaciones asíncronas son aquellas en las cuales debemos hacer una solicitud externa y de acuerdo a ello validar los datos, estas solicitudes suelen devolver un `Promise` o un `Observable`, un buen ejemplo para validaciones asíncronas es cuando insertamos un nombre de usuario (username), primero debemos hacer una solicitud a nuestra base de datos y comprobar que el nombre de usuario está disponible.
+Las validaciones asíncronas se colocan en el tercer campo
+```ts
+crearForm() {
+  this.form = this.formBuilder.group({
+    usuario: ['', Validators.required, this.validadoresService.existeUsuario]
+  });
+}
+```
+> **NOTA:** En caso no requerir alguna validación sincrona podemos dejar el espacio en blanco `usuario: ['', , this.validadoresService.existeUsuario]`
 
+```ts
+existeUsuario(control:FormControl): Promise<any> | Observable<any> {
+  return new Promise((res, err) =>{
+    setTimeout(() => {
+
+      if (control.value === "fercho") {
+        res({existe:true});
+      } else {
+        res(null);
+      }
+    }, 3000);
+  });
+}
+```
 
 ## Angular Material
 Angular Material es un módulo construido para Angular que permite implementar componentes con un diseño basado en Material Design.
