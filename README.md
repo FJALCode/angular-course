@@ -46,9 +46,16 @@
   * [DomSeguro](#domseguro)  
 * [Peticiones HTTP](#peticiones-http)
 * [RxJS](#rxjs)
-  * [Pipe()](#pipe)
-  * [Map()](#map)
+  * [Partes del RxJS](#partes-del-rxjs)
+  * [Patrón Iterador](#patrón-iterador)
+    * [hasNext() & next()](hasnext-next)
+  * [Operadores RxJS](#operadores-rxjs) 
+    * [of()](#of)
+    * [from()](#from)
+    * [Pipe()](#pipe)
+    * [Map()](#map)  
   * [Suscribe()](#suscribe)   
+  * [Subjects](#subjects)
   * [Operadores RxJs vs Función de Orden Superior](#operadores-rxjs-vs-función-de-orden-superior)
 * [Storage](#storage)
   * [Local Storage](#local-storage)
@@ -1439,16 +1446,128 @@ this.http.get('https://restcountries.eu/rest/v2/lang/es').subscribe(data =>{
 ```
 
 ## RxJS
-La RxJS *(Reactive Extensions)* es una librería muy útil de Javascript, que te ayuda a gestionar flujos de datos asíncronos *(Programación Reactiva)*. 
+La RxJS *(Reactive Extensions)* es una librería muy útil de Javascript, que te ayuda a gestionar flujos de datos asíncronos *(Programación Reactiva)*.
+Como norma general, se usa el RxJS para todo código que tiene que gestionar más de un evento o requiere encadenar varias operaciones asíncronas. También es útil cuando se necesita gestionar de forma individual el éxito o error en la ejecución de varias operaciones asíncronas.
 Los operadores de RxJs son funciones que pueden ser encadenadas en lo que llamamos la cadena o pipeline de operadores y que se sitúan entre medias del Observable y el Observer con el objetivo de filtrar, transformar o combinar los valores del Observable/Observables. 
+
+
+#### Partes del RxJS
 Se compone basicamente de los siguientes elementos:
 *   **`Observable`:** El flujo de datos, una colección de eventos que se pueden emitir en algún momento.
-*   **`Observer`:** Un objeto que escucha el flujo de datos y puede actuar sobre los valores que éste emite.
+*   **`Observer`:** Un objeto que escucha el flujo de datos y puede actuar sobre los valores que éste emite. En el patrón Observer, el Subject dispone de una API con 3 métodos principales:
+    *  **[Suscribe](#suscribe)**: para que los Observers se suscriban
+    *  **`Unsubscribe`**: para que los Observers cancelen la suscripción
+    *  **`Notify`**: lo llama internamente cuando detecta cambios en su estado.
 *   **`Subscription`:** Representa la ejecución de un observable y permite cancelarla.
 *   **`Operador`:** Función para manipular los eventos siguiendo los principios de la programación funcional.
+*   **`Subject`**: Similar al `Subject` del patrón Observer. En RxJS sirven para distribuir un Observable hacia varios Observers simultáneamente.
+*   **`Schedulers`**: Los schedulers sirven para controlar el orden de las suscripciones y el orden y velocidad de emisión de eventos.
+
 > Fuente de la información [acá](http://blog.enriqueoriol.com/2019/04/aprende-rxjs-3.html) y [acá](https://pablomagaz.com/blog/como-funcionan-operadores-rxjs)
 
-#### Pipe()
+#### Patrón Iterador
+En este caso, se utiliza un objeto (el Iterador), como mecanismo para atravesar una colección de elementos (o contenedor) de forma secuencial, para acceder a su contenido.
+La gracia del Patrón Iterador, es que te permite iterar la colección sin necesidad de conocer la estructura del contenedor, gracias a una API bien definida.
+
+##### hasNext() & next()
+La API de un Iterador, expone típicamente 2 métodos:
+
+* **hasNext()** para saber si todavía quedan elementos en la colección (Booleano)
+* **next()** para acceder al siguiente elemento de la colección
+
+
+Por tanto te da igual como esté implementada la lista que contiene los datos, lo único que necesitas es saber que implementa el patrón iterador y que por tanto puedes usar estos dos métodos, 
+```ts
+let myArray = new IterableList ( 1, 2, 3, 4, 5 );
+let iterator = myArray.iterator();
+
+while( iterator.hasNext( ) ){
+    console.log( iterator.next( ) );
+}
+//output: 1 2 3 4 5
+```
+
+
+#### Operadores RxJS
+Un Operador es una función que crea un nuevo Observable basado en el Observable actual. Esta es una operación pura: el Observable anterior permanece sin modificar.
+Esencialmente, un Operador es como una máquina que toma un Observable como entrada, realiza alguna lógica en los valores transmitidos a través del Observable y crea un nuevo Observable con estos valores, sin cambiar el Observable original.
+<img src="img/OperatorExplanation.png" width="auto;"/>
+
+
+##### of()
+El Operador `of` es un Operador de creación. Los operadores de creación son funciones que crean un flujo observable a partir de una fuente.
+
+El Operador `of` creará un Observable que emite una cantidad variable de valores en secuencia, seguido de una notificación de Finalización.
+```ts
+import { of } from 'rxjs';
+
+const arr = [1, 2, 3];
+const arr$ = of(arr);
+arr$.subscribe((values) => console.log(`Emitted Values: `, values));
+// Response: 
+// Emitted Values: [1, 2, 3]
+```
+En este ejemplo al subscribirnos emitirá una única respuesta con el array completo, ya que el operador los toma como una única colección de datos, en caso de desear pasarlos por separados usando este operador debemos pasar los elementos dentro del `of` separados por comas
+```ts
+import { of } from 'rxjs';
+
+const arr$ = of(1, 2, 3);
+arr$.subscribe((values) => console.log(`Emitted Values: `, values));
+// Response: 
+// Emitted Values: 1
+// Emitted Values: 2
+// Emitted Values: 3
+```
+Si nos basamos en el primer ejemplo vemos  que `of` emitirá la matriz completa como un único valor. Esto contrasta con el operador `from`
+
+##### from()
+El Operador `from` convierte un Array, Promise o Iterable en un Observable.
+
+Este operador convertirá una Promesa en un Observable, lo que permitirá que se maneje de una manera más reactiva. Cuando la Promesa se resuelva o rechace, se enviará una notificación de finalización a todos los suscriptores.
+
+Además, a diferencia `of`, emitirá cada elemento en un Array o Iterable en secuencia, en lugar del valor completo. Una vez que se han emitido todos los elementos del Array o Iterable, se envía una notificación de finalización a los suscriptores.
+
+```ts
+import { from } from 'rxjs'; 
+
+const arr = [1, 2, 3];
+const arr$ = from(arr);
+arr$.subscribe((values) => console.log(`Emitted Values: `, values));
+// Response: 
+// Emitted Values: 1
+// Emitted Values: 2
+// Emitted Values: 3
+```
+Como podemos el operador `form` tomó cada número y lo emitió como un valor. El suscriptor recibió cada valor en secuencia y llamó `console.log` tres veces.
+
+También podemos usar un valor como una cadena:
+```ts
+import { from } from 'rxjs'; 
+
+const fromString$ = from("Hello");
+fromString$.subscribe((value) => console.log(`Emitted Values: `, value));
+// Response: 
+// Emitted Values: H
+// Emitted Values: e
+// Emitted Values: l
+// Emitted Values: l
+// Emitted Values: o
+```
+
+También podemos hacerlos con promesas, cuando la misma se resuelva el operador `form` podra ejecutarse
+```ts
+import { from } from 'rxjs'; 
+const examplePromise = new Promise((resolve, reject) => {
+  // Do some async code and resolve and object with an id property
+  return resolve({ id: 1 });
+});
+
+const promise$ = from(examplePromise);
+promise$.subscribe((value) => console.log(`Emitted Values: `, value));
+```
+
+
+##### Pipe()
 El método `pipe()` permitirá ejecutar uno o varios operadores simultaneamente según tengamos la necesidad combinandolos y arrojando 1 solo resultado.
 ```ts
 import { of } from 'rxjs';
@@ -1463,7 +1582,7 @@ mapped.subscribe(name => console.log (name));
 ```
 Como se aprecia el método `pipe()` recibe un array de operadores, de modo que cada operador va modificando el flujo de datos.
 
-#### Map()
+##### Map()
 El operador `Map` es llamado operador de transformación ya que nos permitirá manipular los datos recibidos y retornar un nuevo tipo de información más pulidad y precisa para la funcionalidad que estemos desarrollando sin tener que trabajar con el objeto entero.
 ```ts
 import { of } from 'rxjs';
@@ -1478,8 +1597,9 @@ mapped.subscribe(name => console.log (name));
 En este ejemplo el flujo de evento de la constante `obs` incluye un objeto con nombre y edad, como queremos obtener solo el nombre usamos el operador `map()`para retornar el dato a usar.
 En caso que la petición a usar retorne algún tipo de error (un buen ejemplo al usar una petición de tipo `http`), provocará que el map no sea ejecutado.
 
+
 #### Suscribe()
-El método `.suscribe()` es un método del tipo Observable. El tipo Observable es una utilidad que transmite datos de forma asíncrona o sincrónica a una variedad de componentes o servicios que se han suscrito al observable.  Su interfaz define 3 métodos (1 obligatorio y 2 opcionales):
+El método `suscribe()` es un método del tipo Observable el cual se ejecuta cuando se produce un evento indicado en el atributo subscrito. El tipo Observable es una utilidad que transmite datos de forma asíncrona o sincrónica a una variedad de componentes o servicios que se han suscrito al observable.  Su interfaz define 3 métodos (1 obligatorio y 2 opcionales):
 *   **`next`:** *(Required)*. Método callback que recibe y usa los datos
 *   **`error`:** *(Opcional)*. Método callback que escucha el flujo de datos y puede actuar sobre los valores que éste emite en caso de errores.
 *   **`complete`:** *(Opcional)*. Método callback para la notificación de la ejecución completa.
@@ -1491,6 +1611,10 @@ myObservable.subscribe(
 );
 ```
 
+#### Subjects
+Los Subjects son Observables que además pueden manejar múltiples suscripciones a un único flujo y son capaces de emitir eventos.
+
+Como los eventos solo los quieres generar a nivel interno, lo que debes hacer es crear un Subject privado, y exponer un Observable público con el flujo del primero.
 #### Operadores RxJs vs Función de Orden Superior
 
 Las funciones que operan en otras funciones, ya sea tomándolas como argumentos o retornandolas, se denominan `funciones de orden superior`, un buen ejemplo sería crear una función que permita sumar 2 números y retorne el resultado.
