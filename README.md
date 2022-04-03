@@ -24,6 +24,8 @@
 * [Bootstrap](#bootstrap)
 * [Navegación en Angular](#navegación-en-angular)
   * [Routes File](#routes-file)
+  * [RouterModule.forRoot vs RouterModule.forChild](#routermoduleforroot-vs-routermoduleforchild)
+  * [Lazy Loading](#lazy-loading)
   * [RouterLink y RouterLinkActive](#routerlink-y-routerlinkactive)
   * [Router](#router)
   * [ActivatedRoute](#activatedroute)  
@@ -103,11 +105,15 @@ Las `directivas estructurales` son instrucciones que le indicarán a la sección
     * Usamos la bandera **`--flat`** para generar componentes en la ruta principal o en una especifica sin crear una carpeta que haga alusión al nombre del mismo.
 *   **`ng generate service ruta`:** Crea un servicio en la ruta indicada, por default lo crea en la carpeta `app`, podemos abreviar la petición `ng g s services/spotify`, Este comando creará el servicio en la ruta `src/app/services/spotify.service.ts`.
     * Usamos la bandera **`--skip-tests`** para generar el servicio sin el archivo `.spec`.
+    * Usamos la bandera **`--flat`** para generar componentes en la ruta principal o en una especifica sin crear una carpeta que haga alusión al nombre del mismo.
 *   **`ng generate directive ruta`:** Crea una directiva personalizada en la ruta indicada, por default lo crea en la carpeta `app`, podemos abreviar la petición `ng g d directives/resaltado`, Este comando creará la directiva en la ruta `src/app/directives/resaltado/resaltado.directive.ts`.
     * Usamos la bandera **`--skip-tests`** para generar la directiva sin el archivo `.spec`.
+    * Usamos la bandera **`--flat`** para generar componentes en la ruta principal o en una especifica sin crear una carpeta que haga alusión al nombre del mismo.
 *   **`ng generate pipe ruta`:** Crea un pipe personalizado en la ruta indicada, por default lo crea en la carpeta `app`, podemos abreviar la petición `ng g p pipes/capitalizado`, Este comando creará el pipe en la ruta `src/app/pipes/capitalizado/capitalizado.pipe.ts`.
+    * Usamos la bandera **`--flat`** para generar componentes en la ruta principal o en una especifica sin crear una carpeta que haga alusión al nombre del mismo.
 *   **`ng generate guard ruta`:** Crea un guard en la ruta indicada, por default lo crea en la carpeta `app`, podemos abreviar la petición `ng g guard guards/auth`, Este comando creará la directiva en la ruta `src/app/guards/guard/auth.guard.ts`.
     * Usamos la bandera **`--skip-tests`** para generar el guard sin el archivo `.spec`.
+    * Usamos la bandera **`--flat`** para generar componentes en la ruta principal o en una especifica sin crear una carpeta que haga alusión al nombre del mismo.
 
 
 ## Estructura de un proyecto de Angular
@@ -760,8 +766,6 @@ export class AppRoutesModule {}
 ```
 >    Utilizaremos el path `{ path: '**', pathMatch:'full', redirectTo: 'home'}`, para generar una ruta por defecto en caso que la ruta colocada no exista, el mismo siempre se debe colocar al final de todas las rutas.
 
-Utilizaremos el método `forRoot()` porque configura el enrutador en el nivel raíz de la aplicación, este método proporciona los proveedores de servicios y las directivas necesarias para el enrutamiento y realiza la navegación inicial en función de la URL del navegador actual.
-
 Este módulo debe ser importado en el archivo base `app.modules.ts`
 ```ts
 import { BrowserModule } from '@angular/platform-browser';
@@ -820,6 +824,148 @@ import { ROUTES } from "./app.routes";
 export class AppModule { }
 ```
 > El `{ useHash: true }`, permitirá que la ruta del proyecto a mostrar incluya un `#` dando como resultado `http://localhost:4200/#/home`
+
+#### RouterModule.forRoot vs RouterModule.forChild
+Al momento de inyectar las configuraciones en nuestro archivo de rutas nos toparemos con 2 métodos a importar, el `forRoot()` y `forChild()`
+Utilizaremos el método `forRoot()` cuando estemos úbicados en el módulo principal de la APP por lo general llamado `AppRoutingModule`, este módulo contiene  todas las directivas, las rutas, y el propio servicio del router, en pocas palabras es el primer módulo que se carga cuando se ejecuta la aplicación por primera vez 
+```ts
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
+
+const routes: Routes = [
+  { path: '', component: HomeComponent }
+];
+
+@NgModule({
+  //Sección a usar forRoot() o forChild()
+  imports: [RouterModule.forRoot(routes)],
+  exports: [RouterModule]
+})
+export class AppRoutingModule {}
+```
+Utilizaremos `forChild()` al momento de crea módulos hijos con sus propios archivos de rutas, este tipo de modalidad de trabajo es de suma importancia cuando tenemos aplicaciones muy grande ya que permite la carga bajo demanda o [Lazy Loading](#lazy-loading)
+> **NOTA:** Los siguientes archivos de `AmericaRoutingModule` y `EuropaRoutingModule` serán referenciados en la sección de [Lazy Loading](#lazy-loading)
+```ts
+import { NgModule } from '@angular/core';
+import { Routes, RouterModule } from '@angular/router';
+import { EspanaComponent } from './espana/espana.component';
+import { FranciaComponent } from './francia/francia.component';
+import { ItaliaComponent } from './italia/italia.component';
+
+
+const routes: Routes = [
+  {
+    path: 'espana',
+    component: EspanaComponent
+  },
+  {
+    path: 'francia',
+    component: FranciaComponent
+  },
+  {
+    path: 'italia',
+    component: ItaliaComponent
+  } 
+];
+
+@NgModule({
+  imports: [RouterModule.forChild(routes)],
+  exports: [RouterModule]
+})
+export class EuropaRoutingModule { }
+```
+```ts
+import { NgModule } from '@angular/core';
+import { Routes, RouterModule } from '@angular/router';
+import { ChileComponent } from './chile/chile.component';
+import { ArgentinaComponent } from './argentina/argentina.component';
+import { UruguayComponent } from './uruguay/uruguay.component';
+
+const routes: Routes = [
+  {
+    path: 'chile',
+    component: ChileComponent
+  },
+  {
+    path: 'argentina',
+    component: ArgentinaComponent
+  },
+  {
+    path: 'uruguay',
+    component: UruguayComponent
+  }  
+];
+
+@NgModule({
+  imports: [RouterModule.forChild(routes)],
+  exports: [RouterModule]
+})
+export class AmericaRoutingModule { }
+```
+
+#### Lazy Loading
+El Lazy Loading o carga perezosa nos permite organizar una aplicación Angular a fin que la misma no cargue en forma completa toda la aplicación web en una única llamada al servidor, sino que retrace la carga hasta el momento de su utilización (carga bajo demanda).
+Esta forma de particionar una aplicación y su carga por partes es de suma importancia cuando tenemos aplicaciones muy grandes y tiene como beneficio que el usuario no tenga que esperar mucho tiempo en la carga inicial de la aplicación. Como desventaja podríamos decir que cuando el usuario accede a otras secciones de la aplicación también tenga que esperar que se recuperen del servidor.
+Para simular un Lazy Loading, continuaremos con los archivos routing usados en [RouterModule.forRoot vs RouterModule.forChild](#routermoduleforroot-vs-routermoduleforchild). Acá tendremos 2 módulos (`AmericaModule` & `EuropaModule`) que alojaran sus clases especificas y donde cada módulo administrará las rutas hijas anterioremente creadas
+```ts
+import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+
+@NgModule({
+  declarations: [],
+  imports: [
+    CommonModule,
+    AmericaRoutingModule
+  ]
+})
+export class AmericaModule { }
+```
+```ts
+import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+
+@NgModule({
+  declarations: [],
+  imports: [
+    CommonModule,
+    EuropaRoutingModule
+  ]
+})
+export class EuropaModule { }
+```
+> Es importan recordar importar estas rutas hijas
+
+Después de crear nuestro módulos hijos procedemos a codificar las rutas del módulo principal de nuestra aplicación, para ello abrimos el archivo `app-routing.module.ts` y especificamos la sintaxis para hacer la carga de los otros módulos con Lazy Loading:
+
+```ts
+import { NgModule } from '@angular/core';
+import { Routes, RouterModule } from '@angular/router';
+import { AmericaComponent } from './america/america.component';
+import { EuropaComponent } from './europa/europa.component';
+
+const routes: Routes = [
+  {
+    path: 'america',
+    component: AmericaComponent,
+    loadChildren: () => import('./america/america.module').then(m => m.AmericaModule)
+  },
+  {
+    path: 'europa',
+    component: EuropaComponent,
+    loadChildren: () => import('./europa/europa.module').then(m => m.EuropaModule)
+  }
+]
+
+@NgModule({
+  imports: [RouterModule.forRoot(routes)],
+  exports: [RouterModule]
+})
+export class AppRoutingModule { }
+```
+Podemos ver que la sintaxis para la carga diferida usa la propiedad `loadChildren` seguida de la función `import` para las importaciones dinámicas del módulo indicado en el parámetro. La ruta de importación es la ruta relativa al módulo:
+```ts
+loadChildren: () => import('./america/america.module').then(m => m.AmericaModule)
+```
 
 #### RouterLink y RouterLinkActive
 El `RouterLink` es una directiva que permite la navegación entre las distintas rutas de nuestra app, la misma se colocará en nuestro archivo HTML de la siguiente manera
