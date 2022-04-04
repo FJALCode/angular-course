@@ -21,7 +21,6 @@
   * [ngStyle](#ngstyle)
   * [ngClass](#ngclass)
   * [ngSwitch](#ngSwitch)
-* [Bootstrap](#bootstrap)
 * [Navegación en Angular](#navegación-en-angular)
   * [Routes File](#routes-file)
   * [RouterModule.forRoot vs RouterModule.forChild](#routermoduleforroot-vs-routermoduleforchild)
@@ -47,6 +46,10 @@
   * [Personalizado](#personalizado)  
   * [DomSeguro](#domseguro)  
 * [Peticiones HTTP](#peticiones-http)
+  * [Get](#Get)
+  * [Post](#Post)
+  * [Put](#Put)
+  * [Delete](#Delete)
 * [RxJS](#rxjs)
   * [Partes del RxJS](#partes-del-rxjs)
   * [Patrón Iterador](#patrón-iterador)
@@ -79,10 +82,12 @@
   * [Validators](#validators)
     * [Validaciones sincrónicas](#validaciones-sincrónicas)
     * [Validaciones asíncronas](#validaciones-asíncronas)   
+* [Bootstrap](#bootstrap)
 * [Angular Material](#angular-material)
   * [Instalación y Configuración](#instalación-y-configuración)
   * [MatButton](#matbutton)
   * [MatCard](#matcard)
+
 
  
 ## Proyecto de Angular
@@ -719,29 +724,6 @@ export class NgSwitchComponent {
     <div *ngSwitchDefault>danger</div>
 </div>
 ```
-
-
-## Bootstrap
-Existen varias manera de instalar bootstrap en nuestro proyecto, si nuestro proyecto usa internet se recomienda el uso del CDN de bootstrap, a nivel local existen otras maneras como el uso de paquetes de node. Para ello basta con instalar el bootstrap, jquery y popper
-```sh
-npm install bootstrap --save
-npm install jquery@1.9.1 popper.js@^1.16.1 --save
-```
-Luego nos dirigimos al archivo `angular.json` en la sección de build/styles y build/scripts los paquetes de arranque 
-```json
-"build": {
-  "styles": [
-    "src/styles.css",
-    "node_modules/bootstrap/dist/css/bootstrap.min.css"
-  ],
-  "scripts": [
-    "node_modules/jquery/jquery.min.js",
-    "node_modules/popper.js/dist/umd/popper.min.js",
-    "node_modules/bootstrap/dist/js/bootstrap.min.js"
-  ]
-},
-```
-> La desventaja de tenerlo de forma local es que estas librerías pasan a ser parte del `bundle` provocando que el programa final pese un poco más.
 
 ## Navegación en Angular
 La navegación en angular se basa en disminuir en lo posible la cantidad de data a intercambiar entre el **browser** y el **servidor**, para ello que hace es cargar una sola página (generalmente **index.html**) y después, todas las otras páginas/componentes se refrescan usando **Javascript**; pero sólo **index.html** es una página completa, el resto de las páginas son sólo porciones de HTML que su código Javascript va cambiando **dinámicamente**.
@@ -1554,7 +1536,7 @@ export class DomseguroPipe implements PipeTransform {
 }
 ```
 ## Peticiones HTTP
-Para usar el cliente HTTP de angular para hacer peticiones y consumir API REST usando los distintos métodos (GET, POST, PUT, DELETE, etc), es necesario importar el módulo propio de angular `HttpClientModule` en el `app.module.ts`
+La mayoría de las aplicaciones front-end necesitan comunicarse con un servidor a través del protocolo HTTP para descargar o cargar datos y acceder a otros servicios back-end. Para usar el cliente HTTP de angular para hacer peticiones y consumir API REST usando los distintos métodos (GET, POST, PUT, DELETE, etc), es necesario importar el módulo propio de angular `HttpClientModule` en el `app.module.ts`
 ```ts
 import { HttpClientModule } from "@angular/common/http";
 
@@ -1572,24 +1554,46 @@ export class AppModule { }
 ```
 Seguido de esto importamos la clase `HttpClient` de `@angular/common/http` en el componente/servicio donde lo vallamos a utilizar y lo inyectamos a su constructor 
 ```ts
+import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Component } from '@angular/core';
 
-@Component({
-  selector: 'app-home',
-  templateUrl: './home.component.html',
-  styles: []
-})
-export class HomeComponent {
-  constructor( private http:HttpClient ) { }
+@Injectable()
+export class ConfigService {
+  constructor(private http: HttpClient) { }
 }
 ```
-La clase `HttpCliente` nos traerá los distintos métodos (GET, POST, PUT, DELETE, etc) los cuales usaremos para relizar las peticiones seguidos del método `suscribe` el cual nos permitirá escuchar/recibir la data
+La clase `HttpCliente` nos traerá los distintos métodos (GET, POST, PUT, DELETE) los cuales usaremos para relizar las peticiones
 ```ts
-this.http.get('https://restcountries.eu/rest/v2/lang/es').subscribe(data =>{
-  console.log(data);      
-});
+url = 'https://restcountries.eu/rest/v2/lang/es'
+params = {name:'Fernando'}
+// Get
+this.http.get(url)
+// Post
+this.http.post(url, params)
+//Put
+this.http.put(url, params)
+// Delete
+this.http.post(url+'?id')
 ```
+Estas peticiones devolveran un Observable con el tipo de dato que se le indiquen, por lo que es recomendable indicarlo en la función que llamará la petición
+```ts
+getProductos(): Observable<any>{
+    return this.http.get(this.url+'productos');
+}
+```
+
+#### GET
+El método `GET` solicita una representación de un recurso específico. Las peticiones que usan el método GET sólo deben recuperar datos.
+
+#### POST
+El método `POST` se utiliza para enviar una entidad a un recurso en específico, causando a menudo un cambio en el estado o efectos secundarios en el servidor.
+
+#### PUT
+El modo `PUT` reemplaza todas las representaciones actuales del recurso de destino con la carga útil de la petición.
+
+#### DELETE
+El método `DELETE` borra un recurso en específico.
+
 
 ## RxJS
 La RxJS *(Reactive Extensions)* es una librería muy útil de Javascript, que te ayuda a gestionar flujos de datos asíncronos *(Programación Reactiva)*.
@@ -2506,6 +2510,28 @@ existeUsuario(control:FormControl): Promise<any> | Observable<any> {
   });
 }
 ```
+
+## Bootstrap
+Existen varias manera de instalar bootstrap en nuestro proyecto, si nuestro proyecto usa internet se recomienda el uso del CDN de bootstrap, a nivel local existen otras maneras como el uso de paquetes de node. Para ello basta con instalar el bootstrap, jquery y popper
+```sh
+npm install bootstrap --save
+npm install jquery@1.9.1 popper.js@^1.16.1 --save
+```
+Luego nos dirigimos al archivo `angular.json` en la sección de build/styles y build/scripts los paquetes de arranque 
+```json
+"build": {
+  "styles": [
+    "src/styles.css",
+    "node_modules/bootstrap/dist/css/bootstrap.min.css"
+  ],
+  "scripts": [
+    "node_modules/jquery/jquery.min.js",
+    "node_modules/popper.js/dist/umd/popper.min.js",
+    "node_modules/bootstrap/dist/js/bootstrap.min.js"
+  ]
+},
+```
+> La desventaja de tenerlo de forma local es que estas librerías pasan a ser parte del `bundle` provocando que el programa final pese un poco más.
 
 ## Angular Material
 Angular Material es un módulo construido para Angular que permite implementar componentes con un diseño basado en Material Design.
