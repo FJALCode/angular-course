@@ -1587,6 +1587,23 @@ El método `GET` solicita una representación de un recurso específico. Las pet
 
 #### POST
 El método `POST` se utiliza para enviar una entidad a un recurso en específico, causando a menudo un cambio en el estado o efectos secundarios en el servidor.
+En angular un petición de tipo `POST` se compone de:
+*   **`url`:** Sera de tipo `string` y representará endpoint a usar.
+*   **`body`:** Puede ser de tipo `any` o de algún tipo que se le especifique en concreto (Por lo general suele ser un objeto) donde se almacenará la data. 
+*   **`options`:** Es un objeto (*opcional*) en donde podremos pasarle campos extras como el headers de la petición en caso de ser requerido
+
+```ts
+// Una petición post estandar solo lleva la url y el body
+crearHeroe(heroe: HeoreModel): Observable<any> {
+  return this.http.post(url, heroe)
+}
+
+// en caso de desear agregar un campo opcional quedaría
+crearHeroe(heroe: HeoreModel): Observable<any> {
+  let headers = new HttpHeaders().set('Content-Type','application/x-www-form-urlencoded');
+  return this.http.post(url, heroe, {headers: headers})
+}
+```
 
 #### PUT
 El modo `PUT` reemplaza todas las representaciones actuales del recurso de destino con la carga útil de la petición.
